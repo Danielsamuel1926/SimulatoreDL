@@ -40,7 +40,7 @@ body {
 
 /* TABLE */
 .stTable td, .stTable th {
-    padding: 8px;
+    padding: 18px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -201,6 +201,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
