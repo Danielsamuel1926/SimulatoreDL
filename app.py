@@ -15,15 +15,11 @@ body {
 
 /* HEADER */
 .header-container {
-    background: linear-gradient(90deg, #080a1a, #0c1457);
+    background: linear-gradient(90deg, #00BFFF, #87CEFA);
     padding: 20px;
     text-align: center;
     border-radius: 12px;
     margin-bottom: 20px;
-}
-.header-container img {
-    height: 60px;
-    margin-right: 15px;
 }
 
 /* BUTTON PERSONALIZZATO */
@@ -50,12 +46,11 @@ body {
 """, unsafe_allow_html=True)
 
 # ==============================
-# HEADER
+# HEADER (senza logo)
 # ==============================
 st.markdown("""
 <div class="header-container">
-    <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas </span>
-    <span style="font-size:20px; font-weight:bold; color:#fff;">Daniele Lettera CEI </span>
+    <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas 💡🔥</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -64,15 +59,15 @@ st.markdown("""
 # ==============================
 tipo = option_menu(
     menu_title="Seleziona Fornitura",
-    options=["Luce💡", "Gas🔥"],
+    options=["Luce", "Gas"],
     icons=["bolt", "fire"],
     menu_icon="solar-panel",
     default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"background-color": "#c4c4c4"},
-        "nav-link": {"font-size": "18px", "color": "#000"},
-        "nav-link:hover": {"background-color": "#ADE8FF"},
+        "container": {"background-color": "#02111f"},
+        "nav-link": {"font-size": "18px", "color": "#005f91"},
+        "nav-link:hover": {"background-color": "#0077b6"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
     }
 )
@@ -143,7 +138,6 @@ fatt_attuale = st.number_input("Importo fattura attuale (€)")
 # ==============================
 if st.button("Calcola Bolletta", key="calc"):
     
-    # (qui va IDENTICO il tuo calcolo già pronto)
     try:
         mesi_idx = [MESI.index(mese1)+1] if periodo=="Mensile" else [MESI.index(mese1)+1, MESI.index(mese2)+1]
         num_mesi = len(mesi_idx)
