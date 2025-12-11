@@ -190,7 +190,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
         for voce, val in [("Bonus Sociale",bonus),("Ricalcoli",ricalcoli),("Altre Partite",altre),("Canone TV",canone_tv)]:
             if val>0:
-                righe.append({"Voce":voce,"Importo (€)":f"{val:.2f}"})
+                righe = []({"Descrizione":voce,"Importo (€)":f"{val:.2f}"})
                 totale+=val
 
         st.subheader("📊 Scontrino Bolletta DL CEI")
@@ -208,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
