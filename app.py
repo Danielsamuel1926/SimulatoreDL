@@ -26,7 +26,7 @@ body {
 .big-btn {
     background-color: #00BFFF;
     color: white;
-    font-size: 18px;
+    font-size: 30px;
     padding: 10px 0px;
     border-radius: 8px;
     width: 100%;
@@ -201,6 +201,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
