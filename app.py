@@ -54,7 +54,6 @@ body {
 # ==============================
 st.markdown("""
 <div class="header-container">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Energia_%28lightning_icon%29.svg/1024px-Energia_%28lightning_icon%29.svg.png">
     <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas 💡🔥</span>
 </div>
 """, unsafe_allow_html=True)
@@ -208,6 +207,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
