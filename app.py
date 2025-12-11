@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from streamlit_option_menu import option_menu
 
 # ==============================
@@ -193,7 +194,8 @@ if st.button("Calcola Bolletta", key="calc"):
                 totale+=val
 
         st.subheader("📊 Scontrino Bolletta DL CEI")
-        st.table(pd.DataFrame(righe))
+        df = pd.DataFrame(righe).reset_index(drop=True)
+        st.table(df)
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
 
         diff = fatt_attuale - totale
@@ -206,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
