@@ -79,7 +79,7 @@ def aliquota_iva_gas(smc_annuo):
 # ================================
 # INPUT DATI
 # ================================
-st.markdown("<div class='card'><h3>Dati Cliente</h3></div>", unsafe_allow_html=True)
+
 
 cliente = st.text_input("Cliente")
 periodo = st.selectbox("Periodo", ["Mensile","Bimestrale"])
@@ -195,6 +195,7 @@ if st.button("Calcola Bolletta"):
 
     except Exception as e:
         st.error(f"Errore: {e}")
+
 
 
 
