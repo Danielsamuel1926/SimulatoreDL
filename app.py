@@ -2,102 +2,80 @@ import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
 
-# ================================
-# STILE AZIENDALE (CSS)
-# ================================
+# ==============================
+# STILE GENERALE
+# ==============================
 st.markdown("""
 <style>
-/* ====== GENERALE ====== */
+/* Corpo */
 body {
-    background-color: #E8F4FF;
+    background-color: #E7F5FF;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ====== HEADER ====== */
+/* HEADER */
 .header-container {
-    background: linear-gradient(90deg, #0077b6, #00a8e8);
-    padding: 25px;
+    background: linear-gradient(90deg, #00BFFF, #87CEFA);
+    padding: 20px;
     text-align: center;
     border-radius: 12px;
-    margin-bottom: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.header-container img {
-    height: 55px;
-    margin-right: 15px;
-}
-.header-container span {
-    font-size: 32px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: 1px;
+    margin-bottom: 20px;
 }
 
-/* ====== CARD ====== */
-.card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-    margin-bottom: 25px;
-    border-left: 5px solid #0077b6;
-}
-
-/* ====== BOTTONI ====== */
+/* BUTTON PERSONALIZZATO */
 .big-btn {
-    background-color: #0077b6;
+    background-color: #00BFFF;
     color: white;
     font-size: 18px;
-    padding: 12px 0px;
-    border-radius: 10px;
+    padding: 10px 0px;
+    border-radius: 8px;
     width: 100%;
     font-weight: bold;
-    margin-top: 15px;
-    border: none;
-    transition: 0.2s;
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 .big-btn:hover {
-    background-color: #005f91;
-    transform: scale(1.02);
+    background-color: #009ACD;
 }
 
-/* ====== TABELLE ====== */
-thead tr th {
-    background-color: #0077b6 !important;
-    color: white !important;
-}
-tbody tr:nth-child(even) {
-    background-color: #e0f0ff !important;
+/* TABLE */
+.stTable td, .stTable th {
+    padding: 8px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ================================
-# HEADER
-# ================================
+# ==============================
+# HEADER (senza logo)
+# ==============================
 st.markdown("""
 <div class="header-container">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Energia_%28lightning_icon%29.svg/1024px-Energia_%28lightning_icon%29.svg.png">
-    <span>Simulatore Luce & Gas 💡🔥</span>
+    <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas 💡🔥</span>
 </div>
 """, unsafe_allow_html=True)
 
-# ================================
-# MENU
-# ================================
+# ==============================
+# MENU LATERALE
+# ==============================
 tipo = option_menu(
-    menu_title=None,
+    menu_title="Seleziona Fornitura",
     options=["Luce", "Gas"],
     icons=["bolt", "fire"],
+    menu_icon="solar-panel",
+    default_index=0,
     orientation="horizontal",
-    default_index=0
+    styles={
+        "container": {"background-color": "#02111f"},
+        "nav-link": {"font-size": "18px", "color": "#005f91"},
+        "nav-link:hover": {"background-color": "#0077b6"},
+        "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
+    }
 )
 
-# ================================
-# DATI E COSTI
-# ================================
+# ==============================
+# COSTANTI & FUNZIONI (uguali a prima)
+# ==============================
+QUOTA_FISSA_LUCE = 22.80 / 12
 QUOTA_POTENZA = 2.10
 DISPACCIAMENTO = 0.020
 ONERI_SISTEMA = 1.90
@@ -110,23 +88,29 @@ OFFERTE_LUCE = {"Fast":(0.010,10),"F&F":(0.008,8.5),"Sind":(0.005,7),"Smart":(0.
 
 PSV = [0,0.388,0.402,0.403,0.418,0.422,0.415,0.410,0.400,0.388,0.345,0.350,0.360]
 OFFERTE_GAS = {"Fast":(0.10,10),"F&F":(0.08,8.5),"Sind":(0.05,7),"Smart":(0.10,12.5)}
+QUOTA_FISSA_GAS = 15/12
+QUOTA_CONSUMO_GAS = 0.025
+QUOTA_COMM_GAS = 31 * 0.005452
+QUOTA_DIST_GAS = 31 * 0.140658
+QUOTA_VAR_DIST_GAS = 0.171530
+ONERI_SISTEMA_GAS = 1.50
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
         "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
-def accisa_annua_gas(smc_annuo):
+def accisa_annua_gas(smc_annuo, regione="Centro-Nord"):
     if smc_annuo <= 120: return 0.044
     elif smc_annuo <= 480: return 0.175
-    elif smc_annuo <= 1560: return 0.170
-    else: return 0.186
+    elif smc_annuo <= 1560: return 0.170 if regione=="Centro-Nord" else 0.120
+    else: return 0.186 if regione=="Centro-Nord" else 0.150
 
 def aliquota_iva_gas(smc_annuo):
     return 0.10 if smc_annuo <= 480 else 0.22
 
-# ================================
-# INPUT DATI
-# ================================
-st.markdown("<div class='card'><h3>Dati Cliente</h3></div>", unsafe_allow_html=True)
+# ==============================
+# INPUT UTENTI
+# ==============================
+st.markdown("### Inserisci i dati del cliente:")
 
 cliente = st.text_input("Cliente")
 periodo = st.selectbox("Periodo", ["Mensile","Bimestrale"])
@@ -134,113 +118,80 @@ mese1 = st.selectbox("Mese 1", MESI)
 mese2 = st.selectbox("Mese 2", MESI) if periodo=="Bimestrale" else None
 
 if tipo == "Luce":
-    kwh = st.number_input("Consumo kWh", min_value=0.0)
-    kw = st.selectbox("Potenza impegnata", [1,1.5,2,2.5,3,4.5,5,5.5,6])
+    kwh = st.number_input("Consumo kWh")
+    kw = st.selectbox("Potenza impegnata (kW)", [1,1.5,2,2.5,3,4.5,5,5.5,6])
     offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()))
-    canone_tv = st.number_input("Canone TV (€)", min_value=0.0)
+    canone_tv = st.number_input("Canone TV (€)")
 else:
     smc = st.number_input("Consumo Gas (m³)")
     smc_annuo = st.number_input("Consumo annuo Gas (m³)")
     offerta = st.selectbox("Offerta Gas", list(OFFERTE_GAS.keys()))
     canone_tv = 0
 
-bonus = st.number_input("Bonus Sociale (€)", min_value=0.0)
-ricalcoli = st.number_input("Ricalcoli (€)", min_value=0.0)
-altre = st.number_input("Altre Partite (€)", min_value=0.0)
-fatt_attuale = st.number_input("Importo fattura attuale (€)", min_value=0.0)
+bonus = st.number_input("Bonus Sociale (€)")
+ricalcoli = st.number_input("Ricalcoli (€)")
+altre = st.number_input("Altre Partite (€)")
+fatt_attuale = st.number_input("Importo fattura attuale (€)")
 
-# ================================
-# CALCOLO
-# ================================
-if st.button("Calcola Bolletta", key="calc", help="Esegui il Calcolo"):
-
+# ==============================
+# PULSANTE CALCOLO
+# ==============================
+if st.button("Calcola Bolletta", key="calc"):
+    
     try:
-        # Indici dei mesi (0-based)
-        mesi_idx = [MESI.index(mese1)] if periodo=="Mensile" else [MESI.index(mese1), MESI.index(mese2)]
+        mesi_idx = [MESI.index(mese1)+1] if periodo=="Mensile" else [MESI.index(mese1)+1, MESI.index(mese2)+1]
         num_mesi = len(mesi_idx)
         totale = 0
         righe = []
 
-        # ---------------- LUCE ----------------
-        if tipo == "Luce":
+        if tipo=="Luce":
             SPREAD, COMM = OFFERTE_LUCE[offerta]
-            
-            # Materia energia mese per mese
-            materia = sum(kwh * (PUN[m] + SPREAD + DISPACCIAMENTO + ASOS) for m in mesi_idx)
-            
-            # Altri costi
-            sp_rete = kwh * 0.0445 * num_mesi
-            q_pot = kw * QUOTA_POTENZA * num_mesi
+            prezzo_medio = sum([PUN[m] for m in mesi_idx])/num_mesi + SPREAD + DISPACCIAMENTO + ASOS
+            materia = kwh * prezzo_medio
+            sp_rete = kwh * 0.0445
+            quota_pot = kw * QUOTA_POTENZA * num_mesi
             oneri = ONERI_SISTEMA * num_mesi
             comm_tot = COMM * num_mesi
-            iva = (materia + sp_rete + q_pot + oneri + comm_tot) * 0.10
-            
-            righe += [
-                {"Voce":"Materia Energia", "Importo (€)":f"{materia:.2f}"},
-                {"Voce":"Spese Rete", "Importo (€)":f"{sp_rete:.2f}"},
-                {"Voce":"Quota Potenza", "Importo (€)":f"{q_pot:.2f}"},
-                {"Voce":"Oneri di Sistema", "Importo (€)":f"{oneri:.2f}"},
-                {"Voce":"Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
-                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"},
-            ]
-            
-            totale += materia + sp_rete + q_pot + oneri + comm_tot + iva
+            iva = max(0, kwh-150*num_mesi)*0.0227 + (materia+sp_rete+quota_pot+oneri+comm_tot)*0.10
 
-        # ---------------- GAS ----------------
+            righe += [
+                {"Voce":f"Materia Energia ({kwh} kWh)","Importo (€)":f"{materia:.2f}"},
+                {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
+                {"Voce":"Quota potenza","Importo (€)":f"{quota_pot:.2f}"},
+                {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
+                {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
+                {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
+            ]
+            totale += materia+sp_rete+quota_pot+oneri+iva+comm_tot
+
         else:
             SPREAD, COMM = OFFERTE_GAS[offerta]
-            
-            # Materia energia/PSV mese per mese
-            materia = sum(smc * (PSV[m] + SPREAD + 0.025) for m in mesi_idx)
-            
-            # Altri costi
-            sp_rete = 0.171530 * smc + 31 * 0.140658
-            oneri = 1.50 * num_mesi + (0.07 * smc) + (0.12 * smc)
-            comm_tot = COMM * num_mesi
-            accise = accisa_annua_gas(smc_annuo) * smc
-            iva = (materia + sp_rete + oneri + comm_tot) * aliquota_iva_gas(smc_annuo)
-            
+            psv_avg = sum([PSV[m] for m in mesi_idx])/num_mesi
+            materia = smc*(psv_avg+SPREAD+QUOTA_CONSUMO_GAS)
+            sp_rete = QUOTA_VAR_DIST_GAS*smc + QUOTA_DIST_GAS
+            oneri = ONERI_SISTEMA_GAS*num_mesi + (0.07*smc)+(0.12*smc)
+            comm_tot = COMM*num_mesi
+            iva = accisa_annua_gas(smc_annuo)*smc + (materia+sp_rete+oneri+comm_tot)*aliquota_iva_gas(smc_annuo)
+
             righe += [
-                {"Voce":"Materia Energia/PSV", "Importo (€)":f"{materia:.2f}"},
-                {"Voce":"Spese Rete", "Importo (€)":f"{sp_rete:.2f}"},
-                {"Voce":"Oneri di Sistema", "Importo (€)":f"{oneri:.2f}"},
-                {"Voce":"Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
-                {"Voce":"Accise", "Importo (€)":f"{accise:.2f}"},
-                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"},
+                {"Voce":f"Materia Energia/PSV","Importo (€)":f"{materia:.2f}"},
+                {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
+                {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
+                {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
+                {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
             ]
-            
-            totale += materia + sp_rete + oneri + comm_tot + accise + iva
+            totale += materia+sp_rete+oneri+iva+comm_tot
 
-        # ---- EXTRA ----
-        for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli), ("Altre Partite", altre), ("Canone TV", canone_tv)]:
-            if val > 0:
-                righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
-                totale += val
+        for voce, val in [("Bonus Sociale",bonus),("Ricalcoli",ricalcoli),("Altre Partite",altre),("Canone TV",canone_tv)]:
+            if val>0:
+                righe.append({"Voce":voce,"Importo (€)":f"{val:.2f}"})
+                totale+=val
 
-        # ================================
-        # RISULTATI
-        # ================================
-        st.subheader("📊 Scontrino Bolletta")
+        st.subheader("📊 Scontrino Bolletta DL CEI")
         st.table(pd.DataFrame(righe))
-
-        # Totale finale
-        st.markdown(f"""
-        <div style="
-        background:#0077b6;
-        color:white;
-        padding:18px;
-        border-radius:12px;
-        font-size:22px;
-        text-align:center;
-        margin-top:25px;
-        box-shadow:0px 4px 10px rgba(0,0,0,0.2);
-        ">
-        💰 Totale Bolletta: <b>{totale:.2f} €</b>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
 
         diff = fatt_attuale - totale
-
         if diff > 0:
             st.success(f"Risparmio: {diff:.2f} €")
         elif diff < 0:
@@ -249,4 +200,5 @@ if st.button("Calcola Bolletta", key="calc", help="Esegui il Calcolo"):
             st.info("Totale uguale alla fattura attuale.")
 
     except Exception as e:
-        st.error(f"Errore: {e}")
+        st.error(f"Errore nel calcolo: {e}")
+
