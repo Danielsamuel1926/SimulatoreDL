@@ -54,7 +54,8 @@ body {
 # ==============================
 st.markdown("""
 <div class="header-container">
-    <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas 💡🔥</span>
+    <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas </span>
+    <span style="font-size:20px; font-weight:bold; color:#fff;">Daniele Lettera CEI </span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -63,7 +64,7 @@ st.markdown("""
 # ==============================
 tipo = option_menu(
     menu_title="Seleziona Fornitura",
-    options=["Luce", "Gas"],
+    options=["Luce💡", "Gas🔥"],
     icons=["bolt", "fire"],
     menu_icon="solar-panel",
     default_index=0,
@@ -206,6 +207,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
