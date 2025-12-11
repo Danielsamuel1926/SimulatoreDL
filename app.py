@@ -182,13 +182,15 @@ if st.button("Calcola Bolletta", key="calc"):
             comm_tot = COMM*num_mesi
             iva = accisa_annua_gas(smc_annuo)*smc + (materia+sp_rete+oneri+comm_tot)*aliquota_iva_gas(smc_annuo)
 
-            righe = np.array [
-                {"Voce":f"Materia Energia/PSV","Importo (€)":f"{materia:.2f}"},
+            righe += [
+                {"Voce":f"Materia Energia ({kwh} kWh)","Importo (€)":f"{materia:.2f}"},
                 {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
+                {"Voce":"Quota potenza","Importo (€)":f"{quota_pot:.2f}"},
                 {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
                 {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
                 {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
             ]
+            np.delete(righe,0, 0)
             totale += materia+sp_rete+oneri+iva+comm_tot
 
         for voce, val in [("Bonus Sociale",bonus),("Ricalcoli",ricalcoli),("Altre Partite",altre),("Canone TV",canone_tv)]:
@@ -211,6 +213,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
