@@ -7,13 +7,70 @@ from streamlit_option_menu import option_menu
 # ================================
 st.markdown("""
 <style>
-body { background-color: #E8F4FF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-.header-container { background: linear-gradient(90deg, #03529c, #00a8e8); padding: 25px; text-align: center; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; }
-.header-container img { height: 55px; margin-right: 15px; }
-.header-container span { font-size: 32px; font-weight: 700; color: white; letter-spacing: 1px; }
-.card { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; border-left: 5px solid #0077b6; }
-thead tr th { background-color: #0077b6 !important; color: white !important; }
-tbody tr:nth-child(even) { background-color: #e0f0ff !important; }
+/* ====== GENERALE ====== */
+body {
+    background-color: #E8F4FF;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ====== HEADER ====== */
+.header-container {
+    background: linear-gradient(90deg, #0077b6, #00a8e8);
+    padding: 25px;
+    text-align: center;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.header-container img {
+    height: 55px;
+    margin-right: 15px;
+}
+.header-container span {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+}
+
+/* ====== CARD ====== */
+.card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+    border-left: 5px solid #0077b6;
+}
+
+/* ====== BOTTONI ====== */
+.big-btn {
+    background-color: #0077b6;
+    color: white;
+    font-size: 18px;
+    padding: 12px 0px;
+    border-radius: 10px;
+    width: 100%;
+    font-weight: bold;
+    margin-top: 15px;
+    border: none;
+    transition: 0.2s;
+}
+.big-btn:hover {
+    background-color: #005f91;
+    transform: scale(1.02);
+}
+
+/* ====== TABELLE ====== */
+thead tr th {
+    background-color: #0077b6 !important;
+    color: white !important;
+}
+tbody tr:nth-child(even) {
+    background-color: #e0f0ff !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -22,7 +79,8 @@ tbody tr:nth-child(even) { background-color: #e0f0ff !important; }
 # ================================
 st.markdown("""
 <div class="header-container">
-    <span>Simulatore Luce & Gas DL</span>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Energia_%28lightning_icon%29.svg/1024px-Energia_%28lightning_icon%29.svg.png">
+    <span>Simulatore Luce & Gas 💡🔥</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -31,7 +89,7 @@ st.markdown("""
 # ================================
 tipo = option_menu(
     menu_title=None,
-    options=["Luce💡", "Gas🔥"],
+    options=["Luce", "Gas"],
     icons=["bolt", "fire"],
     orientation="horizontal",
     default_index=0
@@ -48,21 +106,10 @@ ASOS = 0.03
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178,
        0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
 
-# Spread e commissione di commercializzazione separati per offerta
-OFFERTA_LUCE = {
-    "Fast": {"spread": 0.010, "comm": 10},
-    "F&F": {"spread": 0.008, "comm": 8.5},
-    "Sind": {"spread": 0.005, "comm": 7},
-    "Smart": {"spread": 0.010, "comm": 12.5}
-}
+OFFERTE_LUCE = {"Fast":(0.010,10),"F&F":(0.008,8.5),"Sind":(0.005,7),"Smart":(0.010,12.5)}
 
 PSV = [0,0.388,0.402,0.403,0.418,0.422,0.415,0.410,0.400,0.388,0.345,0.350,0.360]
-OFFERTA_GAS = {
-    "Fast": {"spread": 0.10, "comm": 10},
-    "F&F": {"spread": 0.08, "comm": 8.5},
-    "Sind": {"spread": 0.05, "comm": 7},
-    "Smart": {"spread": 0.10, "comm": 12.5}
-}
+OFFERTE_GAS = {"Fast":(0.10,10),"F&F":(0.08,8.5),"Sind":(0.05,7),"Smart":(0.10,12.5)}
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
         "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
@@ -79,7 +126,7 @@ def aliquota_iva_gas(smc_annuo):
 # ================================
 # INPUT DATI
 # ================================
-
+st.markdown("<div class='card'><h3>Dati Cliente</h3></div>", unsafe_allow_html=True)
 
 cliente = st.text_input("Cliente")
 periodo = st.selectbox("Periodo", ["Mensile","Bimestrale"])
@@ -89,12 +136,12 @@ mese2 = st.selectbox("Mese 2", MESI) if periodo=="Bimestrale" else None
 if tipo == "Luce":
     kwh = st.number_input("Consumo kWh", min_value=0.0)
     kw = st.selectbox("Potenza impegnata", [1,1.5,2,2.5,3,4.5,5,5.5,6])
-    offerta = st.selectbox("Offerta Luce", list(OFFERTA_LUCE.keys()))
+    offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()))
     canone_tv = st.number_input("Canone TV (€)", min_value=0.0)
 else:
     smc = st.number_input("Consumo Gas (m³)")
     smc_annuo = st.number_input("Consumo annuo Gas (m³)")
-    offerta = st.selectbox("Offerta Gas", list(OFFERTA_GAS.keys()))
+    offerta = st.selectbox("Offerta Gas", list(OFFERTE_GAS.keys()))
     canone_tv = 0
 
 bonus = st.number_input("Bonus Sociale (€)", min_value=0.0)
@@ -105,71 +152,78 @@ fatt_attuale = st.number_input("Importo fattura attuale (€)", min_value=0.0)
 # ================================
 # CALCOLO
 # ================================
-if st.button("Calcola Bolletta"):
+if st.button("Calcola Bolletta", key="calc", help="Esegui il Calcolo"):
 
     try:
+        # Indici dei mesi (0-based)
         mesi_idx = [MESI.index(mese1)] if periodo=="Mensile" else [MESI.index(mese1), MESI.index(mese2)]
         num_mesi = len(mesi_idx)
         totale = 0
         righe = []
 
+        # ---------------- LUCE ----------------
         if tipo == "Luce":
-            spread = OFFERTA_LUCE[offerta]["spread"]
-            comm = OFFERTA_LUCE[offerta]["comm"]
-
-            # Materia energia mese per mese (senza commissione)
-            materia = sum(kwh * (PUN[m] + DISPACCIAMENTO + ASOS + spread) for m in mesi_idx)
-
+            SPREAD, COMM = OFFERTE_LUCE[offerta]
+            
+            # Materia energia mese per mese
+            materia = sum(kwh * (PUN[m] + SPREAD + DISPACCIAMENTO + ASOS) for m in mesi_idx)
+            
+            # Altri costi
             sp_rete = kwh * 0.0445 * num_mesi
             q_pot = kw * QUOTA_POTENZA * num_mesi
-            comm_tot = comm * num_mesi
-            iva = (materia + sp_rete + q_pot + comm_tot) * 0.10
-
+            oneri = ONERI_SISTEMA * num_mesi
+            comm_tot = COMM * num_mesi
+            iva = (materia + sp_rete + q_pot + oneri + comm_tot) * 0.10
+            
             righe += [
                 {"Voce":"Materia Energia", "Importo (€)":f"{materia:.2f}"},
                 {"Voce":"Spese Rete", "Importo (€)":f"{sp_rete:.2f}"},
                 {"Voce":"Quota Potenza", "Importo (€)":f"{q_pot:.2f}"},
-                {"Voce":"Oneri di Sistema", "Importo (€)":f"{ONERI_SISTEMA*num_mesi:.2f}"},
-                {"Voce":"Spread Offerta", "Importo (€)":f"{spread*kwh*num_mesi:.2f}"},
-                {"Voce":"Commissione Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
-                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"}
+                {"Voce":"Oneri di Sistema", "Importo (€)":f"{oneri:.2f}"},
+                {"Voce":"Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
+                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"},
             ]
+            
+            totale += materia + sp_rete + q_pot + oneri + comm_tot + iva
 
-            totale += materia + sp_rete + q_pot + ONERI_SISTEMA*num_mesi + spread*kwh*num_mesi + comm_tot + iva
-
+        # ---------------- GAS ----------------
         else:
-            spread = OFFERTA_GAS[offerta]["spread"]
-            comm = OFFERTA_GAS[offerta]["comm"]
-
-            materia = sum(smc * (PSV[m] + 0.025 + spread) for m in mesi_idx)
+            SPREAD, COMM = OFFERTE_GAS[offerta]
+            
+            # Materia energia/PSV mese per mese
+            materia = sum(smc * (PSV[m] + SPREAD + 0.025) for m in mesi_idx)
+            
+            # Altri costi
             sp_rete = 0.171530 * smc + 31 * 0.140658
             oneri = 1.50 * num_mesi + (0.07 * smc) + (0.12 * smc)
-            comm_tot = comm * num_mesi
+            comm_tot = COMM * num_mesi
             accise = accisa_annua_gas(smc_annuo) * smc
             iva = (materia + sp_rete + oneri + comm_tot) * aliquota_iva_gas(smc_annuo)
-
+            
             righe += [
                 {"Voce":"Materia Energia/PSV", "Importo (€)":f"{materia:.2f}"},
                 {"Voce":"Spese Rete", "Importo (€)":f"{sp_rete:.2f}"},
                 {"Voce":"Oneri di Sistema", "Importo (€)":f"{oneri:.2f}"},
-                {"Voce":"Spread Offerta", "Importo (€)":f"{spread*smc*num_mesi:.2f}"},
-                {"Voce":"Commissione Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
+                {"Voce":"Commercializzazione", "Importo (€)":f"{comm_tot:.2f}"},
                 {"Voce":"Accise", "Importo (€)":f"{accise:.2f}"},
-                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"}
+                {"Voce":"IVA", "Importo (€)":f"{iva:.2f}"},
             ]
+            
+            totale += materia + sp_rete + oneri + comm_tot + accise + iva
 
-            totale += materia + sp_rete + oneri + spread*smc*num_mesi + comm_tot + accise + iva
-
-        # Extra
+        # ---- EXTRA ----
         for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli), ("Altre Partite", altre), ("Canone TV", canone_tv)]:
             if val > 0:
                 righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
                 totale += val
 
-        # Risultati
+        # ================================
+        # RISULTATI
+        # ================================
         st.subheader("📊 Scontrino Bolletta")
         st.table(pd.DataFrame(righe))
 
+        # Totale finale
         st.markdown(f"""
         <div style="
         background:#0077b6;
@@ -186,6 +240,7 @@ if st.button("Calcola Bolletta"):
         """, unsafe_allow_html=True)
 
         diff = fatt_attuale - totale
+
         if diff > 0:
             st.success(f"Risparmio: {diff:.2f} €")
         elif diff < 0:
@@ -195,22 +250,3 @@ if st.button("Calcola Bolletta"):
 
     except Exception as e:
         st.error(f"Errore: {e}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
