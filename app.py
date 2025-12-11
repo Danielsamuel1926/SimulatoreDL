@@ -184,7 +184,7 @@ if st.button("Calcola Bolletta", key="calc"):
                 {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
                 {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
                 {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
-                {"Accise+IVA","Importo (€)":f"{iva:.2f}"}
+                {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
             ]
             totale += materia+sp_rete+oneri+iva+comm_tot
 
@@ -208,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
