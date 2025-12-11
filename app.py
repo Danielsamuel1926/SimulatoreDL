@@ -55,6 +55,7 @@ body {
 st.markdown("""
 <div class="header-container">
     <span style="font-size:32px; font-weight:bold; color:#fff;">Simulatore Luce & Gas DL</span>
+    <span style="font-size:18px; font-weight:bold; color:#fff;">Residenziale</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -207,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
