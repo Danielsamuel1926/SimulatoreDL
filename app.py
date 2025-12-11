@@ -9,7 +9,7 @@ st.markdown("""
 <style>
 /* Corpo */
 body {
-    background-color: #053c63;
+    background: linear-gradient(90deg, #053c63, #87CEFA);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -207,6 +207,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
