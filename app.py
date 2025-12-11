@@ -162,7 +162,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
             righe += [
                 {"Voce":f"Materia Energia ({kwh} kWh)","Importo (€)":f"{materia:.2f}"},
-                {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
+                {"Voce":"Spesa per la rete e gli oneri generali","Importo (€)":f"{sp_rete:.2f}"},
                 {"Voce":"Quota potenza","Importo (€)":f"{quota_pot:.2f}"},
                 {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
                 {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
@@ -181,7 +181,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
             righe += [
                 {"Voce":f"Materia Energia/PSV","Importo (€)":f"{materia:.2f}"},
-                {"Voce":"Spese rete","Importo (€)":f"{sp_rete:.2f}"},
+                {"Voce":"Spesa per la rete e gli oneri generali","Importo (€)":f"{sp_rete:.2f}"},
                 {"Voce":"Oneri di sistema","Importo (€)":f"{oneri:.2f}"},
                 {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
                 {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
@@ -208,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
