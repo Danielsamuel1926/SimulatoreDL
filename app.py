@@ -71,7 +71,7 @@ tipo = option_menu(
     orientation="horizontal",
     styles={
         "container": {"background-color": "#D0EBFF"},
-        "nav-link": {"font-size": "18px", "color": "#000"},
+        "nav-link": {"font-size": "18px", "color": "#25294d"},
         "nav-link:hover": {"background-color": "#ADE8FF"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
     }
@@ -206,4 +206,5 @@ if st.button("Calcola Bolletta", key="calc"):
             st.info("Totale uguale alla fattura attuale.")
 
     except Exception as e:
+
         st.error(f"Errore nel calcolo: {e}")
