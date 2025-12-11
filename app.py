@@ -169,6 +169,8 @@ if st.button("Calcola Bolletta", key="calc"):
                 {"Voce":"Commercializ.","Importo (€)":f"{comm_tot:.2f}"},
                 {"Voce":"Accise+IVA","Importo (€)":f"{iva:.2f}"}
             ]
+            np.delete(righe,0, 0)
+            
             totale += materia+sp_rete+quota_pot+oneri+iva+comm_tot
 
         else:
@@ -209,6 +211,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
