@@ -123,7 +123,7 @@ mese1 = st.selectbox("Mese 1", MESI)
 mese2 = st.selectbox("Mese 2", MESI) if periodo=="Bimestrale" else None
 
 if tipo == "Luce":
-    kwh = st.number_input("Consumo kWh")
+    kwh = st.number_input("Consumo Luce kWh")
     kw = st.selectbox("Potenza impegnata (kW)", [1,1.5,2,2.5,3,4.5,5,5.5,6])
     offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()))
     canone_tv = st.number_input("Canone TV (€)")
@@ -206,6 +206,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
