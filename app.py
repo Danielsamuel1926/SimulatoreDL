@@ -8,7 +8,7 @@ from streamlit_option_menu import option_menu
 st.markdown("""
 <style>
 body { background-color: #E8F4FF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-.header-container { background: linear-gradient(90deg, #0077b6, #00a8e8); padding: 25px; text-align: center; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; }
+.header-container { background: linear-gradient(90deg, #03529c, #00a8e8); padding: 25px; text-align: center; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; }
 .header-container img { height: 55px; margin-right: 15px; }
 .header-container span { font-size: 32px; font-weight: 700; color: white; letter-spacing: 1px; }
 .card { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; border-left: 5px solid #0077b6; }
@@ -196,6 +196,7 @@ if st.button("Calcola Bolletta"):
 
     except Exception as e:
         st.error(f"Errore: {e}")
+
 
 
 
