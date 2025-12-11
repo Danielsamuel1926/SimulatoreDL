@@ -15,7 +15,7 @@ body {
 
 /* HEADER */
 .header-container {
-    background: linear-gradient(90deg, #00BFFF, #87CEFA);
+    background: linear-gradient(90deg, #0b0c12, #253073);
     padding: 20px;
     text-align: center;
     border-radius: 12px;
@@ -65,7 +65,7 @@ tipo = option_menu(
     default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"background-color": "#02111f"},
+        "container": {"background-color": "#c4c4c4"},
         "nav-link": {"font-size": "18px", "color": "#005f91"},
         "nav-link:hover": {"background-color": "#0077b6"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
@@ -201,6 +201,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
