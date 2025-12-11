@@ -133,7 +133,7 @@ else:
     offerta = st.selectbox("Offerta Gas", list(OFFERTE_GAS.keys()))
     canone_tv = 0
 
-bonus = st.number_input("Bonus Sociale (€)")
+bonus = st.number_input("Bonus Sociale "solo se visibile in fattura attuale"(€)")
 ricalcoli = st.number_input("Ricalcoli (€)")
 altre = st.number_input("Altre Partite (€)")
 fatt_attuale = st.number_input("Importo fattura attuale (€)")
@@ -206,6 +206,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
