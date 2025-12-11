@@ -58,7 +58,7 @@ st.markdown("""
 # MENU LATERALE
 # ==============================
 tipo = option_menu(
-    menu_title="Seleziona Fornitura",
+    menu_title=" ",
     options=["Luce", "Gas"],
     icons=["bolt", "fire"],
     menu_icon="solar-panel",
@@ -201,4 +201,5 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
