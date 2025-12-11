@@ -70,11 +70,7 @@ tipo = option_menu(
     orientation="horizontal",
     styles={
         .container {
-        /* Gradient da blu scuro a azzurro chiaro */
-        background: linear-gradient(135deg, #02111f, #00a8e8);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+        "container": {"background-color": "#013566"},
         "nav-link": {"font-size": "18px", "color": "#005f91"},
         "nav-link:hover": {"background-color": "#0077b6"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
@@ -212,6 +208,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
