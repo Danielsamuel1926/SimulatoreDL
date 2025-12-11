@@ -44,6 +44,7 @@ body {
 
 /* TABLE */
 .stTable td, .stTable th {
+    background-color: #009ACD;
     padding: 8px;
 }
 </style>
@@ -206,6 +207,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
