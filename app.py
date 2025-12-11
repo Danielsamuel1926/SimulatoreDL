@@ -63,7 +63,7 @@ st.markdown("""
 # MENU LATERALE
 # ==============================
 tipo = option_menu(
-    menu_title="Seleziona Fornitura",
+    menu_title="Seleziona Fornitura",#25294d
     options=["Luce", "Gas"],
     icons=["bolt", "fire"],
     menu_icon="solar-panel",
@@ -71,7 +71,7 @@ tipo = option_menu(
     orientation="horizontal",
     styles={
         "container": {"background-color": "#D0EBFF"},
-        "nav-link": {"font-size": "18px", "color": "#25294d"},
+        "nav-link": {"font-size": "18px", "color": "#D0EBFF"},
         "nav-link:hover": {"background-color": "#ADE8FF"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
     }
@@ -208,3 +208,4 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
