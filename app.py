@@ -32,7 +32,7 @@ body {
     width: 100%;
     font-weight: bold;
     margin-top: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 .big-btn:hover {
     background-color: #009ACD;
@@ -201,6 +201,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
