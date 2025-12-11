@@ -69,7 +69,6 @@ tipo = option_menu(
     default_index=0,
     orientation="horizontal",
     styles={
-        .container {
         "container": {"background-color": "#013566"},
         "nav-link": {"font-size": "18px", "color": "#005f91"},
         "nav-link:hover": {"background-color": "#0077b6"},
@@ -208,6 +207,7 @@ if st.button("Calcola Bolletta", key="calc"):
     except Exception as e:
 
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
