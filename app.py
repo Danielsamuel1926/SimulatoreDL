@@ -28,7 +28,7 @@ body {
 
 /* BUTTON PERSONALIZZATO */
 .big-btn {
-    background-color: #00BFFF;
+    background-color: #a7a7a8;
     color: white;
     font-size: 18px;
     padding: 10px 0px;
@@ -206,6 +206,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
