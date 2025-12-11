@@ -22,7 +22,7 @@ tbody tr:nth-child(even) { background-color: #e0f0ff !important; }
 # ================================
 st.markdown("""
 <div class="header-container">
-    <span>Simulatore Luce & Gas 💡🔥</span>
+    <span>Simulatore Luce & Gas DL</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -31,7 +31,7 @@ st.markdown("""
 # ================================
 tipo = option_menu(
     menu_title=None,
-    options=["Luce", "Gas"],
+    options=["Luce💡", "Gas🔥"],
     icons=["bolt", "fire"],
     orientation="horizontal",
     default_index=0
@@ -195,6 +195,7 @@ if st.button("Calcola Bolletta"):
 
     except Exception as e:
         st.error(f"Errore: {e}")
+
 
 
 
