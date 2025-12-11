@@ -15,7 +15,7 @@ body {
 
 /* HEADER */
 .header-container {
-    background: linear-gradient(90deg, #00BFFF, #042c45);
+    background: linear-gradient(90deg, #04456e, #042c45);
     padding: 20px;
     text-align: center;
     border-radius: 12px;
@@ -201,6 +201,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
