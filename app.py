@@ -377,7 +377,7 @@ if calcola:
         # --- BOX DETTAGLIO COSTI ---
         # Determino il testo per il costo totale della materia
         costo_totale_materia_text = (
-            f"Costo Totale Materia ({costo_indicizzato_base} + spread + oneri variabili): "
+            f"Costo Totale Materia ({costo_indicizzato_base} + spread + oneri): "
             f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
         )
         
@@ -435,7 +435,7 @@ if calcola:
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"Spesa Rete e gli oneri generali di sistema ", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
             totale = totale_imponibile + accise_iva_tot
