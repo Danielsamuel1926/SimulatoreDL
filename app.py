@@ -420,20 +420,22 @@ if calcola:
         # --- Dati offerta ---
         if tipo == "Luce":
             SPREAD, COMM_ANNUO = OFFERTE_LUCE[offerta] # COMM_ANNUO è in €/anno
+            unita_prezzo = "kWh"
             lista_prezzi = PUN
             consumo = kwh
             consumo_annuo_ref = kwh_annui # Uso kWh annui per riferimento accisa
             unita_misura = "kWh"
             costo_indicizzato_base = "PUN"
-            costo_annuo_commercializzazione = OFFERTE_LUCE[offerta][1]
+            costo_annuo_commercializzazione = COMM_ANNUO
         else:
             SPREAD, COMM_ANNUO = OFFERTE_GAS[offerta] # COMM_ANNUO è in €/anno
+            unita_prezzo = "m³"
             lista_prezzi = PSV
             consumo = smc
             consumo_annuo_ref = smc_annuo # Uso smc annui per riferimento accisa gas
             unita_misura = "m³"
             costo_indicizzato_base = "PSV"
-            costo_annuo_commercializzazione = OFFERTE_GAS[offerta][1]
+            costo_annuo_commercializzazione = COMM_ANNUO
 
 
         # Costo Commercializzazione Mensile
@@ -476,17 +478,26 @@ if calcola:
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
-        # --- BOX DETTAGLIO COSTI ---
-        # Determino il testo per il costo totale della materia
+        # --- BOX DETTAGLIO COSTI (AGGIORNATO) ---
+        
+        # 1. Costo Unitario Totale Materia
         costo_totale_materia_text = (
             f"Costo Totale Materia ({costo_indicizzato_base} + spread ): "
             f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
         )
+
+        # 2. Dettaglio Spread
+        spread_text = f"Spread Consumo: **{SPREAD:.4f} €/{unita_prezzo}**"
+
+        # 3. Dettaglio Commercializzazione
+        comm_annua_text = f"Costo Comm. Anno: **{costo_annuo_commercializzazione:.2f} €/anno** ({COMM_MENSILE:.2f} €/mese)"
         
         st.markdown(f"""
         <div class="box-offerta-custom">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
             <p style="margin:0; font-size:14px;">Periodo: {periodo_str}</p>
+            <p style="margin:5px 0 0 0;">{spread_text}</p>
+            <p style="margin:5px 0 0 0;">{comm_annua_text}</p>
             <p style="margin:5px 0 0 0; font-weight:bold;">{costo_totale_materia_text}</p>
         </div>
         """, unsafe_allow_html=True)
