@@ -72,7 +72,7 @@ tipo = option_menu(
 # ==============================
 QUOTA_POTENZA = 2.10
 DISPACCIAMENTO = 0.020
-ONERI_SISTEMA = 1.90
+ONERI_SISTEMA = 1.90 # €/mese
 ASOS = 0.03
 SPESA_RETE_VAR_LUCE_UNITARIO = 0.0445
 
@@ -89,7 +89,7 @@ OFFERTE_GAS = {"Fast":(0.10,10),"F&F":(0.08,8.5),"Sind":(0.05,7),"Smart":(0.10,1
 QUOTA_CONSUMO_GAS = 0.025
 QUOTA_DIST_GAS = 31 * 0.140658
 QUOTA_VAR_DIST_GAS = 0.171530
-ONERI_SISTEMA_GAS = 1.50
+ONERI_SISTEMA_GAS = 1.50 # €/mese
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
         "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
@@ -270,7 +270,13 @@ if calcola:
 
         # Funzione helper per formattare l'unità o N/A
         def fmt_unit(val, unit=""):
-            return f"{val:.4f} €/{unit}" if val else "N/A"
+            # Gestisce il caso di costo unitario per voce fissa (costo €/unità di tempo o €/kW)
+            if unit == "mese" or unit == "kW":
+                 return f"{val:.2f} €/{unit}"
+            # Gestisce il caso di costo unitario per voce variabile (costo €/kWh o €/m³)
+            elif unit:
+                return f"{val:.4f} €/{unit}"
+            return "N/A"
 
         # ---------------- LUCE (Energia Elettrica) ----------------
         if tipo=="Luce":
@@ -290,8 +296,8 @@ if calcola:
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{quota_pot:.2f}"},
-                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{oneri:.2f}"},
+                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
+                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"}, # MODIFICATO QUI
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
                 {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
             ]
