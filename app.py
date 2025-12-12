@@ -195,8 +195,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
         st.subheader("📊 Scontrino Bolletta DL CEI")
         righe = pd.DataFrame(righe)
-        print("\nDataFrame senza indici:\n")
-        print(righe.to_string(index=False))
+        df = pd.DataFrame(righe)
         st.table(df.to_dict(orient="records"))
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
 
@@ -210,6 +209,7 @@ if st.button("Calcola Bolletta", key="calc"):
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
+
 
 
 
