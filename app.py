@@ -254,7 +254,7 @@ if calcola:
 
         # ---------------- RISULTATI ----------------
         df = pd.DataFrame(righe)
-        st.subheader("📊 Scontrino Bolletta DL")
+        st.subheader("📊 Scontrino Energia DL")
         st.dataframe(df, hide_index=True)
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
         
