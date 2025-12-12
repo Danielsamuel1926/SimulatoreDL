@@ -103,6 +103,8 @@ ACCISA_LUCE_TIPI = {
         "descrizione": "Esenzione totale da Accisa."
     }
 }
+# Definiamo la chiave di default qui per un riferimento sicuro
+DEFAULT_ACCISA_LUCE_KEY = "Domestico Residente (Accisa differenziata)"
 
 # PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
@@ -143,11 +145,18 @@ for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcol
         elif key == "cliente":
             st.session_state[key] = ""
         elif key == "tipo_accisa_luce":
-             st.session_state[key] = "Domestico Residente (Accisa differenziata)"
+             # Inizializzazione sicura con la chiave di default
+             st.session_state[key] = DEFAULT_ACCISA_LUCE_KEY
         elif key in ["kwh_annui", "smc_annuo"]:
             st.session_state[key] = 2000.0 if key == "kwh_annui" else 700.0
         else:
             st.session_state[key] = 0.0
+    
+    # CONTROLLO DI ROBUSTEZZA PER LA CHIAVE ACCISA (RISOLVE L'ERRORE)
+    if key == "tipo_accisa_luce" and st.session_state.tipo_accisa_luce not in ACCISA_LUCE_TIPI.keys():
+        # Se il valore salvato nella sessione non è una chiave valida, usiamo il default.
+        st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
+
 
 # ==============================
 # INPUT UTENTI
@@ -196,6 +205,7 @@ if tipo == "Luce":
         tipo_accisa_luce = st.selectbox(
             "Tipologia Accisa (Luce)", 
             list(ACCISA_LUCE_TIPI.keys()),
+            # L'indice ora è sicuro perché il valore nella Session State è stato validato
             index=list(ACCISA_LUCE_TIPI.keys()).index(st.session_state.tipo_accisa_luce),
             key='input_tipo_accisa_luce'
         )
@@ -252,7 +262,7 @@ if reset:
         else:
             st.session_state[key] = 0.0
     st.session_state.kw = 3.0
-    st.session_state.tipo_accisa_luce = "Domestico Residente (Accisa differenziata)"
+    st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
     st.rerun()
 
 # ==============================
@@ -354,22 +364,18 @@ if calcola:
             accisa_aliquota = accisa_config["aliquota"]
             accisa_soglia_annua = accisa_config["soglia_annua"]
             
-            # Calcolo della quota di consumo tassabile annua in percentuale
-            # Questa è la logica standard: si calcola quanto del consumo annuo eccede la soglia annua,
-            # e si applica il rapporto di questa eccedenza al consumo del periodo.
-            # *Nota: Per utenze Domestiche Residenti, l'esenzione è su base mensile (150 kWh/mese),
-            # ma si applica proporzionalmente ai consumi per evitare distorsioni stagionali.
-            
+            accisa_luce = 0.0
             if accisa_aliquota > 0 and consumo_annuo_ref > 0:
-                 # Quota di consumo annuo eccedente la soglia annuale (in percentuale)
-                rapporto_tassabile = max(0, (consumo_annuo_ref - accisa_soglia_annua) / consumo_annuo_ref)
+                 # Quota di consumo annuo eccedente la soglia annuale
+                consumo_annuo_tassabile = max(0, consumo_annuo_ref - accisa_soglia_annua)
+                
+                # Calcolo della quota di consumo tassabile annua in percentuale
+                rapporto_tassabile = consumo_annuo_tassabile / consumo_annuo_ref
                 
                 # Consumo del periodo tassabile con l'aliquota piena
                 consumo_tassabile = consumo * rapporto_tassabile
             
                 accisa_luce = consumo_tassabile * accisa_aliquota
-            else:
-                 accisa_luce = 0.0
             
             # Base Imponibile IVA 10%
             totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
@@ -405,6 +411,7 @@ if calcola:
             # IVA
             aliquota_iva = aliquota_iva_gas(smc_annuo)
             totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
+            # L'IVA si applica su (Base Imponibile + Accisa)
             iva = (totale_imponibile_iva + accisa_gas) * aliquota_iva
             
             # Totale Accise e IVA (per visualizzazione unificata nel Gas)
