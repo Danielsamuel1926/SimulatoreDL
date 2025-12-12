@@ -288,7 +288,7 @@ if reset:
 # CALCOLO BOLLETTA
 # ==============================
 if calcola:
-    # Titolo generale Box dell'offerta
+    # MODIFICA: Titolo generale cambiato e reso più piccolo
     st.markdown("## 🟩 Box dell'offerta")
     
     try:
@@ -371,12 +371,6 @@ if calcola:
             return "N/A"
 
         # --- BOX DETTAGLIO COSTI (MODIFICATO) ---
-        # Determino il testo per il costo totale della materia
-        costo_totale_materia_text = (
-            f"Costo Totale Materia ({costo_indicizzato_base} + spread): "
-            f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
-        )
-        
         # MODIFICA: Classe CSS personalizzata 'box-offerta-custom' per ridurne le dimensioni
         st.markdown(f"""
         <div class="box-offerta-custom">
@@ -384,7 +378,7 @@ if calcola:
             <p style="margin:0;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
             <p style="margin:0; font-size:13px;">Spread/Pfix: **{SPREAD:.4f} €/{unita_misura}** | Comm. Vendita: **{costo_annuo_commercializzazione:.2f} €/anno**</p>
             
-            <p class="costo-totale">{costo_totale_materia_text}</p>
+            <p class="costo-totale">Costo Totale Materia ({costo_indicizzato_base} + spread): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -506,8 +500,8 @@ if calcola:
         
         # --- STAMPA FINALE ---
         
-        # MODIFICA: Titolo "SCONTRINO DELL'ENERGIA" a dimensioni più piccole (####)
-        st.markdown("#### 🧾 SCONTRINO DELL'ENERGIA")
+        # MODIFICA: Titolo "SCONTRINO DELL'ENERGIA" a dimensioni più piccole (###)
+        st.markdown("### 🧾 SCONTRINO DELL'ENERGIA")
 
         df = pd.DataFrame(righe)
         st.dataframe(df, hide_index=True, use_container_width=True)
