@@ -197,8 +197,8 @@ if calcola:
             border-radius:12px;
             margin-bottom:15px;
         ">
-            <h4 style="margin:0;">Cliente: {cliente}</h4>
-            <h4 style="margin:0;">Offerta Selezionata: {offerta}</h4>
+            <h6 style="margin:0;">Cliente: {cliente}</h6>
+            <h8 style="margin:0;">Offerta Selezionata: {offerta}</h8>
             <p style="margin:0;">Potenza: {kw if tipo=='Luce' else 'N/A'} kW</p>
             <p style="margin:0;">Dettaglio costi:</p>
             <ul style="margin:5px 0 0 15px; padding:0;">
