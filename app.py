@@ -110,11 +110,13 @@ DEFAULT_ACCISA_LUCE_KEY = "Domestico Residente (Accisa differenziata)"
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
        0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
 
-OFFERTE_LUCE = {"Fast":(0.010,10),"F&F":(0.008,8.5),"Sind":(0.005,7),"Smart":(0.010,12.5)}
+# OFFERTE_LUCE: (SPREAD, COSTO_COMM_ANNUO)
+OFFERTE_LUCE = {"Fast":(0.010,120.0),"F&F":(0.008,102.0),"Sind":(0.005,84.0),"Smart":(0.010,150.0)}
 
 # PSV (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PSV = [0,0.388,0.402,0.403,0.418,0.422,0.415,0.410,0.400,0.388,0.345,0.350,0.360]
-OFFERTE_GAS = {"Fast":(0.10,10),"F&F":(0.08,8.5),"Sind":(0.05,7),"Smart":(0.10,12.5)}
+# OFFERTE_GAS: (SPREAD, COSTO_COMM_ANNUO)
+OFFERTE_GAS = {"Fast":(0.10,120.0),"F&F":(0.08,102.0),"Sind":(0.05,84.0),"Smart":(0.10,150.0)}
 
 QUOTA_CONSUMO_GAS = 0.025
 QUOTA_DIST_GAS = 31 * 0.140658
@@ -295,6 +297,9 @@ if calcola:
             consumo_annuo_ref = kwh_annui # Uso kWh annui per riferimento accisa
             unita_misura = "kWh"
             costo_indicizzato_base = "PUN"
+            
+            # Recupera il costo annuale di commercializzazione (per lo scontrino)
+            costo_annuo_commercializzazione = OFFERTE_LUCE[offerta][1]
         else:
             SPREAD, COMM_ANNUO = OFFERTE_GAS[offerta] # COMM_ANNUO è in €/anno
             lista_prezzi = PSV
@@ -302,6 +307,10 @@ if calcola:
             consumo_annuo_ref = smc_annuo # Uso smc annui per riferimento accisa gas
             unita_misura = "m³"
             costo_indicizzato_base = "PSV"
+            
+            # Recupera il costo annuale di commercializzazione (per lo scontrino)
+            costo_annuo_commercializzazione = OFFERTE_GAS[offerta][1]
+
 
         # Costo Commercializzazione Mensile
         COMM_MENSILE = COMM_ANNUO / 12
@@ -330,6 +339,9 @@ if calcola:
             # Per l'IVA nel Gas, mostriamo la percentuale
             elif unit == "%":
                  return f"{val*100:.0f} %" 
+            # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
+            elif unit == "anno": # NUOVA UNITÀ
+                 return f"{val:.2f} €/{unit}"
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
@@ -389,10 +401,11 @@ if calcola:
             # Voci Luce
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
+                # VOCI COMMERCIALIZZAZIONE AGGIORNATE: mostriamo il costo annuo dell'offerta
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete e gli oneri generali", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
             totale = totale_imponibile + accise_iva_tot
@@ -424,8 +437,9 @@ if calcola:
             # Voci Gas
             righe += [
                 {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
-                {"Descrizione":f"Spesa Rete e gli oneri generali ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
+                # VOCI COMMERCIALIZZAZIONE AGGIORNATE: mostriamo il costo annuo dell'offerta
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
+                {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
             ]
             
@@ -434,12 +448,12 @@ if calcola:
         # ---------------- VOCI FISCALI (TASSE) ----------------
 
         if tipo == "Luce":
-            # Luce: Accisa e IVA unite come richiesto
+            # Luce: Accisa e IVA unite
             righe.append({"Descrizione":"Accise + IVA (10%)", 
                           "Costo Unitario (€)": "N/A", 
                           "Importo (€)": f"{accise_iva_tot:.2f}"})
         else:
-            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas (logica preesistente)
+            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
             aliquota_iva_gas_attuale = aliquota_iva_gas(smc_annuo) # Recupera l'aliquota Gas corretta
             righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva_gas_attuale*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva_gas_attuale, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
 
