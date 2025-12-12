@@ -377,7 +377,7 @@ if calcola:
         # --- BOX DETTAGLIO COSTI ---
         # Determino il testo per il costo totale della materia
         costo_totale_materia_text = (
-            f"Costo Totale Materia ({costo_indicizzato_base} + spread + oneri): "
+            f"Costo Totale Materia ({costo_indicizzato_base} + spread ): "
             f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
         )
         
