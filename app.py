@@ -21,18 +21,6 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Titolo SCONTRINO DELL'ENERGIA (per enfasi) */
-.scontrino-title {
-    font-size: 28px;
-    font-weight: bold;
-    color: #0b0c12;
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-bottom: 3px solid #00BFFF;
-}
-
 /* Tabella (DataFrame) */
 .stDataFrame {
     border-radius: 8px;
@@ -89,6 +77,10 @@ ONERI_SISTEMA = 1.90 # €/mese
 ASOS = 0.03
 SPESA_RETE_VAR_LUCE_UNITARIO = 0.0445
 
+# ACCISA LUCE
+ACCISA_LUCE_ALIQUOTA = 0.0227 # €/kWh
+ACCISA_LUCE_SOGLIA_MENSILE = 150 # kWh/mese
+
 # PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
        0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
@@ -107,7 +99,7 @@ ONERI_SISTEMA_GAS = 1.50 # €/mese
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
         "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
-# Funzioni di calcolo per il Gas
+# Funzioni di calcolo per il Gas (non cambiano)
 def accisa_annua_gas(smc_annuo):
     if smc_annuo <= 120: return 0.044
     elif smc_annuo <= 480: return 0.175
@@ -308,9 +300,15 @@ if calcola:
             # Oneri di Sistema (Fissi)
             oneri = ONERI_SISTEMA * num_mesi
             
+            # Calcolo Accisa Luce
+            soglia_consumo_accisa = ACCISA_LUCE_SOGLIA_MENSILE * num_mesi
+            consumo_tassabile = max(0, consumo - soglia_consumo_accisa)
+            accisa_luce = consumo_tassabile * ACCISA_LUCE_ALIQUOTA
+
             # Base Imponibile IVA 10%
             totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
-            iva = totale_imponibile * 0.10
+            # L'IVA si applica su (Base Imponibile + Accisa)
+            iva = (totale_imponibile + accisa_luce) * 0.10
             
             # Voci Luce
             righe += [
@@ -321,7 +319,7 @@ if calcola:
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
-            totale = totale_imponibile + iva
+            totale = totale_imponibile + accisa_luce + iva
 
         # ---------------- GAS (Gas Naturale) ----------------
         else:
@@ -336,15 +334,15 @@ if calcola:
             
             # Accise (Variabili)
             accisa_unitario = accisa_annua_gas(smc_annuo)
-            accisa = accisa_unitario * consumo
+            accisa_gas = accisa_unitario * consumo
             
             # IVA
             aliquota_iva = aliquota_iva_gas(smc_annuo)
-            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
+            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT + accisa_gas
             iva = totale_imponibile_iva * aliquota_iva
             
-            # Totale Accise e IVA
-            accise_iva_tot = accisa + iva
+            # Totale Accise e IVA (per visualizzazione unificata nel Gas)
+            accise_iva_tot = accisa_gas + iva
             
             # Voci Gas
             righe += [
@@ -354,12 +352,19 @@ if calcola:
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
             ]
             
-            totale = totale_imponibile_iva + accisa + iva
+            totale = totale_imponibile_iva + iva
 
         # ---------------- VOCI FISCALI (TASSE) ----------------
+
         if tipo == "Luce":
+            # Accisa Luce (separata)
+            righe.append({"Descrizione":f"Accisa Luce (oltre {ACCISA_LUCE_SOGLIA_MENSILE*num_mesi:.0f} kWh)", 
+                          "Costo Unitario (€)": fmt_unit(ACCISA_LUCE_ALIQUOTA, "kWh"), 
+                          "Importo (€)": f"{accisa_luce:.2f}"})
+            # IVA Luce
             righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
         else:
+            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
             righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
 
 
@@ -383,8 +388,8 @@ if calcola:
         
         # --- STAMPA FINALE ---
         
-        # Titolo "SCONTRINO DELL'ENERGIA"
-        st.markdown('<p class="scontrino-title">SCONTRINO DELL\'ENERGIA</p>', unsafe_allow_html=True)
+        # Titolo "SCONTRINO DELL'ENERGIA" (Usando <h2> Markdown)
+        st.markdown("## 🧾 SCONTRINO DELL'ENERGIA")
 
         df = pd.DataFrame(righe)
         st.dataframe(df, hide_index=True, use_container_width=True)
