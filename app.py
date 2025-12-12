@@ -660,7 +660,7 @@ if calcola:
         filename = f"Report_Simulazione_{tipo}_{cliente.replace(' ', '_')}.pdf"
         
         # Crea il link di download
-        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{filename}" style="background-color: #008CBA; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 8px; font-weight: bold; width:100%; box-sizing:border-box;">⬇️ Scarica Report PDF</a>'
+        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{filename}" style="background-color: #1d6600; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 8px; font-weight: bold; width:100%; box-sizing:border-box;">⬇️ Scarica Scontrino PDF</a>'
         
         # Mostra il pulsante di download nella terza colonna
         col3.markdown(href, unsafe_allow_html=True)
