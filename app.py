@@ -133,6 +133,7 @@ if st.button("Calcola Bolletta"):
         totale = 0
         righe = []
 
+        # ---------------- LUCE ----------------
         if tipo=="Luce":
             SPREAD, COMM = OFFERTE_LUCE[offerta]
             prezzo_medio = sum([PUN[m] for m in mesi_idx])/num_mesi + SPREAD + DISPACCIAMENTO + ASOS
@@ -153,6 +154,7 @@ if st.button("Calcola Bolletta"):
             ]
             totale += materia+sp_rete+quota_pot+oneri+comm_tot+iva
 
+        # ---------------- GAS ----------------
         else:
             SPREAD, COMM = OFFERTE_GAS[offerta]
             psv_avg = sum([PSV[m] for m in mesi_idx])/num_mesi
@@ -171,17 +173,18 @@ if st.button("Calcola Bolletta"):
             ]
             totale += materia+sp_rete+oneri+comm_tot+iva
 
-        # Aggiunta voci extra
-		for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli),
-                  ("Altre Partite", altre), ("Canone TV", canone_tv)]:
-    if val > 0:
-        if voce == "Bonus Sociale":
-            righe.append({"Voce": voce, "Importo (€)": f"-{val:.2f}"})
-            totale -= val  # ❌ sottrazione per bonus
-        else:
-            righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
-            totale += val
+        # ---------------- EXTRA ----------------
+        for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli),
+                          ("Altre Partite", altre), ("Canone TV", canone_tv)]:
+            if val > 0:
+                if voce == "Bonus Sociale":
+                    righe.append({"Voce": voce, "Importo (€)": f"-{val:.2f}"})
+                    totale -= val
+                else:
+                    righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
+                    totale += val
 
+        # ---------------- RISULTATI ----------------
         df = pd.DataFrame(righe)
         st.subheader("📊 Scontrino Bolletta DL CEI")
         st.dataframe(df, hide_index=True)
