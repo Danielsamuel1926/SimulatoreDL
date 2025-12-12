@@ -18,7 +18,7 @@ class PDF(FPDF):
         self.set_font('Arial', 'B', 16)
         
         # Titolo Centrato
-        self.cell(0, 10, 'Report di Simulazione Energetica', 0, 1, 'C')
+        self.cell(0, 10, 'Estratto Simulazione Daniele Lettera', 0, 1, 'C')
         self.set_font('Arial', '', 10)
         self.cell(0, 5, 'Daniele Lettera Consulenza', 0, 1, 'C')
         self.set_text_color(0, 0, 0) # Reimposta il colore del testo a nero
