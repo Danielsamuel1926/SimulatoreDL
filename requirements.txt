@@ -1,3 +1,5 @@
-streamlit>=1.25.0
+streamlit
 pandas
+numpy
 streamlit-option-menu
+fpd
