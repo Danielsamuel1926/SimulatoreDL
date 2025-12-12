@@ -80,6 +80,7 @@ OFFERTE_LUCE = {"Fast":(0.010,10),"F&F":(0.008,8.5),"Sind":(0.005,7),"Smart":(0.
 
 PSV = [0,0.388,0.402,0.403,0.418,0.422,0.415,0.410,0.400,0.388,0.345,0.350,0.360]
 OFFERTE_GAS = {"Fast":(0.10,10),"F&F":(0.08,8.5),"Sind":(0.05,7),"Smart":(0.10,12.5)}
+
 QUOTA_CONSUMO_GAS = 0.025
 QUOTA_DIST_GAS = 31 * 0.140658
 QUOTA_VAR_DIST_GAS = 0.171530
@@ -133,9 +134,32 @@ if st.button("Calcola Bolletta"):
         totale = 0
         righe = []
 
+        # ---------------- CALCOLO OFFERTA ----------------
+        if tipo == "Luce":
+            SPREAD, COMM = OFFERTE_LUCE[offerta]
+        else:
+            SPREAD, COMM = OFFERTE_GAS[offerta]
+
+        # ---------------- BOX OFFERTA ----------------
+        st.markdown(f"""
+        <div style="
+            background: linear-gradient(90deg,#00BFFF,#0077b6);
+            color:white;
+            padding:15px;
+            border-radius:12px;
+            margin-bottom:15px;
+        ">
+            <h4 style="margin:0;">Offerta Selezionata: {offerta}</h4>
+            <p style="margin:0;">Dettaglio costi:</p>
+            <ul style="margin:5px 0 0 15px; padding:0;">
+                <li>Spread: {SPREAD:.4f} €/unità</li>
+                <li>Commercializzazione: {COMM:.2f} €/mese</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
         # ---------------- LUCE ----------------
         if tipo=="Luce":
-            SPREAD, COMM = OFFERTE_LUCE[offerta]
             prezzo_medio = sum([PUN[m] for m in mesi_idx])/num_mesi + SPREAD + DISPACCIAMENTO + ASOS
             materia = kwh * prezzo_medio
             sp_rete = kwh * 0.0445 * num_mesi
@@ -156,7 +180,6 @@ if st.button("Calcola Bolletta"):
 
         # ---------------- GAS ----------------
         else:
-            SPREAD, COMM = OFFERTE_GAS[offerta]
             psv_avg = sum([PSV[m] for m in mesi_idx])/num_mesi
             materia = smc*(psv_avg+SPREAD+QUOTA_CONSUMO_GAS)
             sp_rete = QUOTA_VAR_DIST_GAS*smc + QUOTA_DIST_GAS
@@ -188,7 +211,6 @@ if st.button("Calcola Bolletta"):
         df = pd.DataFrame(righe)
         st.subheader("📊 Scontrino Bolletta DL CEI")
         st.dataframe(df, hide_index=True)
-
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
         
         diff = fatt_attuale - totale
