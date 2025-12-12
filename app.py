@@ -21,6 +21,18 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+/* Titolo SCONTRINO DELL'ENERGIA (per enfasi) */
+.scontrino-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #0b0c12;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 3px solid #00BFFF;
+}
+
 /* Tabella (DataFrame) */
 .stDataFrame {
     border-radius: 8px;
@@ -287,9 +299,7 @@ if calcola:
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
-        # ---------------- INIZIO VOCI DI FORNITURA ----------------
-        st.markdown("#### 💡 Spese per la fornitura e gestione")
-
+        # ---------------- VOCI DI FORNITURA ----------------
         if tipo=="Luce":
             # Spesa per la Rete (Quota Variabile)
             sp_rete_variabile = consumo * SPESA_RETE_VAR_LUCE_UNITARIO
@@ -311,7 +321,6 @@ if calcola:
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
-            # Tasse Luce
             totale = totale_imponibile + iva
 
         # ---------------- GAS (Gas Naturale) ----------------
@@ -345,12 +354,9 @@ if calcola:
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
             ]
             
-            # Tasse Gas
             totale = totale_imponibile_iva + accisa + iva
 
         # ---------------- VOCI FISCALI (TASSE) ----------------
-        st.markdown("#### 🏛️ Spese fiscali (IVA, Accise)")
-        
         if tipo == "Luce":
             righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
         else:
@@ -358,8 +364,6 @@ if calcola:
 
 
         # ---------------- VOCI EXTRA ----------------
-        if canone_tv > 0 or ricalcoli != 0 or altre != 0 or bonus > 0:
-            st.markdown("#### ➕ Voci extra, conguagli e bonus")
         
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
@@ -377,8 +381,11 @@ if calcola:
              righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f}"})
              totale -= abs(bonus)
         
-        # --- RISULTATI FINALI (Unico DataFrame) ---
+        # --- STAMPA FINALE ---
         
+        # Titolo "SCONTRINO DELL'ENERGIA"
+        st.markdown('<p class="scontrino-title">SCONTRINO DELL\'ENERGIA</p>', unsafe_allow_html=True)
+
         df = pd.DataFrame(righe)
         st.dataframe(df, hide_index=True, use_container_width=True)
         
