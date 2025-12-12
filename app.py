@@ -280,6 +280,7 @@ if calcola:
             # Gestisce il caso di costo unitario per voce variabile (costo €/kWh o €/m³)
             elif unit:
                 return f"{val:.4f} €/{unit}"
+            # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
         # ---------------- LUCE (Energia Elettrica) ----------------
@@ -297,11 +298,11 @@ if calcola:
             
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"}, # MODIFICATO QUI
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete e oneri", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "10%", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
             ]
             totale = totale_imponibile + iva
 
@@ -327,7 +328,7 @@ if calcola:
             
             righe += [
                 {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"}, # MODIFICATO QUI
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
                 {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa + iva:.2f}"}
@@ -337,7 +338,8 @@ if calcola:
         # ---------------- EXTRA (Canone TV, Bonus, Ricalcoli) ----------------
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
-            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": "N/A", "Importo (€)": f"{canone_tv:.2f}"})
+            # Il canone TV viene visualizzato come costo unitario di sé stesso
+            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f}"})
             totale += canone_tv
 
         for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
