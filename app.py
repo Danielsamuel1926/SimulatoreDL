@@ -37,23 +37,6 @@ div.stButton > button {
     height: 40px;
 }
 
-/* BOX DELL'OFFERTA - DIMENSIONI RIDOTTE */
-.box-offerta-custom {
-    background: linear-gradient(90deg, #186020, #968a11);
-    color: white;
-    padding: 10px; /* Ridotto il padding */
-    border-radius: 12px;
-    margin-bottom: 15px;
-    font-size: 14px; /* Riduco la dimensione generale del testo interno */
-}
-.box-offerta-custom h6, .box-offerta-custom p {
-    margin: 3px 0; /* Riduco i margini interni */
-}
-.box-offerta-custom p.costo-totale {
-    font-weight: bold;
-    font-size: 15px; /* Mantengo questo un po' più grande */
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -288,8 +271,7 @@ if reset:
 # CALCOLO BOLLETTA
 # ==============================
 if calcola:
-    # MODIFICA: Titolo generale cambiato e reso più piccolo
-    st.markdown("## 🟩 Box dell'offerta")
+    st.markdown("## 🧾 Risultato della Simulazione")
     
     try:
         if not st.session_state.cliente:
@@ -370,15 +352,18 @@ if calcola:
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
-        # --- BOX DETTAGLIO COSTI (MODIFICATO) ---
-        # MODIFICA: Classe CSS personalizzata 'box-offerta-custom' per ridurne le dimensioni
+        # --- BOX DETTAGLIO COSTI ---
         st.markdown(f"""
-        <div class="box-offerta-custom">
+        <div style="
+            background: linear-gradient(90deg, #186020, #968a11);
+            color:white;
+            padding:15px;
+            border-radius:12px;
+            margin-bottom:15px;
+        ">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
-            <p style="margin:0;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
-            <p style="margin:0; font-size:13px;">Spread/Pfix: **{SPREAD:.4f} €/{unita_misura}** | Comm. Vendita: **{costo_annuo_commercializzazione:.2f} €/anno**</p>
-            
-            <p class="costo-totale">Costo Totale Materia ({costo_indicizzato_base} + spread): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
+            <p style="margin:0; font-size:14px;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
+            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread + oneri variabili): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -420,7 +405,7 @@ if calcola:
             # Totale Accise e IVA per la riga riepilogativa
             accise_iva_tot = accisa_luce + iva
             
-            # Voci Luce
+            # Voci Luce (Dispacciamento rimosso da qui)
             righe += [
                 {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
                 # Commercializzazione mostra il costo annuo dell'offerta
@@ -500,8 +485,8 @@ if calcola:
         
         # --- STAMPA FINALE ---
         
-        # MODIFICA: Titolo "SCONTRINO DELL'ENERGIA" a dimensioni più piccole (###)
-        st.markdown("### 🧾 SCONTRINO DELL'ENERGIA")
+        # Titolo "SCONTRINO DELL'ENERGIA" (Usando <h2> Markdown)
+        st.markdown("## 🧾 SCONTRINO DELL'ENERGIA")
 
         df = pd.DataFrame(righe)
         st.dataframe(df, hide_index=True, use_container_width=True)
