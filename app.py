@@ -129,7 +129,6 @@ fatt_attuale = st.number_input("Importo fattura attuale (€)")
 # ==============================
 col1, col2 = st.columns(2)
 calcola = col1.button("Calcola", key="calcola")
-reset = col2.button("Reset", key="reset")
 
 if reset:
     st.experimental_rerun()  # Pulisce tutti i dati
