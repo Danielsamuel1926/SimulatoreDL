@@ -169,7 +169,7 @@ if st.button("Calcola Bolletta"):
             iva = (materia+sp_rete+quota_pot+oneri+comm_tot)*0.10
 
             righe += [
-            	{"Voce":f"Quota per Consumi ", "Importo (€)": f"{materia:.2f}"},
+            	{"Voce":f"Quota per Consumi "},
                 {"Voce":f"Spesa per vendita energia elettrica ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
                 {"Voce":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
                 {"Voce":"Quota potenza", "Importo (€)": f"{quota_pot:.2f}"},
