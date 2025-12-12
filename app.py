@@ -143,7 +143,7 @@ if st.button("Calcola Bolletta"):
         # ---------------- BOX OFFERTA ----------------
         st.markdown(f"""
         <div style="
-            background: linear-gradient(90deg,#00BFFF,#0077b6);
+            background: linear-gradient(90deg,#101447,#0077b6);
             color:white;
             padding:15px;
             border-radius:12px;
