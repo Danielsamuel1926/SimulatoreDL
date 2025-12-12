@@ -103,7 +103,7 @@ def aliquota_iva_gas(smc_annuo):
 # ==============================
 st.markdown("### Inserisci i dati del cliente:")
 
-cliente = st.text_input("Cliente")
+cliente = st.text_input("Cliente").upper()
 periodo = st.selectbox("Periodo", ["Mensile","Bimestrale"])
 mese1 = st.selectbox("Mese 1", MESI)
 mese2 = st.selectbox("Mese 2", MESI) if periodo=="Bimestrale" else None
