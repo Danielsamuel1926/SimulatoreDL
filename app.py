@@ -363,7 +363,7 @@ if calcola:
         ">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
             <p style="margin:0; font-size:14px;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
-            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread + oneri variabili): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
+            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
         </div>
         """, unsafe_allow_html=True)
 
