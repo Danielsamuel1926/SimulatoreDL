@@ -172,11 +172,15 @@ if st.button("Calcola Bolletta"):
             totale += materia+sp_rete+oneri+comm_tot+iva
 
         # Aggiunta voci extra
-        for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli),
-                          ("Altre Partite", altre), ("Canone TV", canone_tv)]:
-            if val > 0:
-                righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
-                totale += val
+		for voce, val in [("Bonus Sociale", bonus), ("Ricalcoli", ricalcoli),
+                  ("Altre Partite", altre), ("Canone TV", canone_tv)]:
+    if val > 0:
+        if voce == "Bonus Sociale":
+            righe.append({"Voce": voce, "Importo (€)": f"-{val:.2f}"})
+            totale -= val  # ❌ sottrazione per bonus
+        else:
+            righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
+            totale += val
 
         df = pd.DataFrame(righe)
         st.subheader("📊 Scontrino Bolletta DL CEI")
