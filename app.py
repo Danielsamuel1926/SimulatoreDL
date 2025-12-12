@@ -3,7 +3,7 @@ import pandas as pd
 from streamlit_option_menu import option_menu
 from fpdf import FPDF
 import base64
-import numpy as np # Necessario per max() nel calcolo PDF
+import numpy as np 
 
 # ==============================
 # FUNZIONE DI GENERAZIONE PDF
@@ -59,45 +59,58 @@ def genera_pdf_simulazione(cliente, periodo_str, tipo_energia, offerta, df_risul
     col_widths = [80, 50, 40]
     pdf.set_font('Arial', 'B', 10)
     pdf.cell(col_widths[0], 7, 'Descrizione', 1, 0, 'C')
-    pdf.cell(col_widths[1], 7, 'Costo Unitario (€)', 1, 0, 'C')
-    pdf.cell(col_widths[2], 7, 'Importo (€)', 1, 1, 'C')
+    pdf.cell(col_widths[1], 7, 'Costo Unitario (Eur)', 1, 0, 'C')
+    pdf.cell(col_widths[2], 7, 'Importo (Eur)', 1, 1, 'C')
 
     # Righe Dati
     pdf.set_font('Arial', '', 9)
-    # df_risultati contiene valori formattati come stringa (€/kWh, etc.)
     for index, row in df_risultati.iterrows():
-        # Usa cell al posto di multi_cell per una formattazione più semplice
-        pdf.cell(col_widths[0], 6, str(row['Descrizione']), 1, 0, 'L')
-        pdf.cell(col_widths[1], 6, str(row['Costo Unitario (€)']), 1, 0, 'R')
-        pdf.cell(col_widths[2], 6, str(row['Importo (€)']), 1, 1, 'R') # 1 per andare a capo
+        # Sostituisci il simbolo Euro con la stringa "Eur" nella descrizione
+        descrizione_pulita = str(row['Descrizione']).replace('€', 'Eur')
+        costo_unitario_pulito = str(row['Costo Unitario (€)']).replace('€', 'Eur')
+        importo_pulito = str(row['Importo (€)']).replace('€', 'Eur')
+        
+        pdf.cell(col_widths[0], 6, descrizione_pulita, 1, 0, 'L')
+        pdf.cell(col_widths[1], 6, costo_unitario_pulito, 1, 0, 'R')
+        pdf.cell(col_widths[2], 6, importo_pulito, 1, 1, 'R')
     pdf.ln(5)
 
     # 3. Totale e Risparmio
     pdf.set_font('Arial', 'B', 14)
     pdf.set_fill_color(102, 179, 255) # Azzurro
     pdf.cell(130, 10, 'TOTALE STIMATO SIMULAZIONE:', 1, 0, 'L', fill=True)
-    pdf.cell(30, 10, f'{totale_finale:.2f} €', 1, 1, 'R', fill=True)
+    pdf.cell(30, 10, f'{totale_finale:.2f} Eur', 1, 1, 'R', fill=True)
     pdf.ln(5)
 
     if fatt_attuale > 0:
         pdf.set_font('Arial', '', 12)
-        pdf.cell(0, 7, f'Importo Fattura Attuale per Confronto: {fatt_attuale:.2f} €', 0, 1)
+        pdf.cell(0, 7, f'Importo Fattura Attuale per Confronto: {fatt_attuale:.2f} Eur', 0, 1)
         
         pdf.set_font('Arial', 'B', 14)
         if diff > 0:
             pdf.set_fill_color(144, 238, 144) # Verde chiaro
-            risp_text = f'RISPARMIO STIMATO: {diff:.2f} €'
+            risp_text = f'RISPARMIO STIMATO: {diff:.2f} Eur'
         elif diff < 0:
             pdf.set_fill_color(255, 160, 122) # Salmone
-            risp_text = f'AUMENTO STIMATO: {-diff:.2f} €'
+            risp_text = f'AUMENTO STIMATO: {-diff:.2f} Eur'
         else:
             pdf.set_fill_color(255, 255, 180) # Giallo chiaro
             risp_text = 'NESSUN CAMBIAMENTO SIGNIFICATIVO'
         
         pdf.cell(0, 10, risp_text, 1, 1, 'C', fill=True)
 
+    # CORREZIONE ERRORE U+00A0 e €: 
+    # Usiamo 'iso-8859-1' che è simile a latin-1 ma compatibile con fpdf2 
+    # e rimuoviamo eventuali simboli euro residui
+    try:
+        pdf_bytes = pdf.output(dest='S').encode('iso-8859-1', 'ignore')
+    except UnicodeEncodeError:
+        # Soluzione fallback se fallisce ancora: decodifica, pulisci e codifica
+        pdf_string = pdf.output(dest='S').decode('iso-8859-1', 'ignore')
+        pdf_string_safe = pdf_string.replace('€', ' Eur').replace('\u20ac', ' Eur')
+        pdf_bytes = pdf_string_safe.encode('iso-8859-1', 'ignore')
 
-    return pdf.output(dest='S').encode('latin-1') # Ritorna i bytes del PDF
+    return pdf_bytes
 
 # ==============================
 # STILE GENERALE
@@ -446,7 +459,7 @@ if calcola:
             materia_descrizione = f"Materia Energia/PSV (variabile) ({consumo:.2f} {unita_misura})"
 
 
-        # Funzione helper per formattare l'unità o N/A
+        # Funzione helper per formattare l'unità o N/A (Usa € nel codice Streamlit)
         def fmt_unit(val, unit=""):
             # Gestisce il caso di costo unitario per voce fissa (costo €/unità di tempo o €/kW)
             if unit == "mese" or unit == "kW":
@@ -518,12 +531,12 @@ if calcola:
             
             # Voci Luce (Dispacciamento rimosso da qui)
             righe += [
-                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f} €"},
                 # Commercializzazione mostra il costo annuo dell'offerta
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
-                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
-                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete e gli oneri generali di sistema ", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f} €"},
+                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f} €"},
+                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f} €"},
+                {"Descrizione":"Spesa Rete e gli oneri generali di sistema ", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f} €"},
             ]
             
             totale = totale_imponibile + accise_iva_tot
@@ -554,11 +567,11 @@ if calcola:
             
             # Voci Gas
             righe += [
-                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f} €"},
                 # Commercializzazione mostra il costo annuo dell'offerta
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
-                {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
-                {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f} €"},
+                {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f} €"},
+                {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f} €"},
             ]
             
             totale = totale_imponibile_iva + accise_iva_tot
@@ -569,11 +582,11 @@ if calcola:
             # Luce: Accisa e IVA unite
             righe.append({"Descrizione":"Accise + IVA (10%)", 
                           "Costo Unitario (€)": "N/A", 
-                          "Importo (€)": f"{accise_iva_tot:.2f}"})
+                          "Importo (€)": f"{accise_iva_tot:.2f} €"})
         else:
             # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
             aliquota_iva_gas_attuale = aliquota_iva_gas(smc_annuo) # Recupera l'aliquota Gas corretta
-            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva_gas_attuale*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva_gas_attuale, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
+            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva_gas_attuale*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva_gas_attuale, "%"), "Importo (€)": f"{accise_iva_tot:.2f} €"})
 
 
         # ---------------- VOCI EXTRA ----------------
@@ -581,17 +594,17 @@ if calcola:
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
             # Il canone TV viene visualizzato come costo unitario di sé stesso
-            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f}"})
+            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f} €"})
             totale += canone_tv
 
         for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
             if val != 0:
-                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f}"})
+                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f} €"})
                 totale += val
         
         # Il bonus sociale va sempre sottratto
         if bonus > 0:
-            righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f}"})
+            righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f} €"})
             totale -= abs(bonus)
         
         # --- STAMPA FINALE ---
@@ -599,7 +612,13 @@ if calcola:
         st.markdown("#### 🧾 SCONTRINO DELL'ENERGIA")
 
         df = pd.DataFrame(righe)
-        st.dataframe(df, hide_index=True, use_container_width=True)
+        # Rimuoviamo il simbolo Euro dal DataFrame qui, per visualizzare il numero puro 
+        # (altrimenti Streamlit lo formatta male nel dataframe).
+        df_display = df.copy()
+        for col in ['Costo Unitario (€)', 'Importo (€)']:
+            df_display[col] = df_display[col].str.replace('€', '').str.replace('Eur', '').str.strip()
+
+        st.dataframe(df_display, hide_index=True, use_container_width=True)
         
         totale_finale = max(0, totale) # Il totale non può essere negativo
         
@@ -624,12 +643,13 @@ if calcola:
         # ==================================================
         
         # Genera i byte del PDF chiamando la funzione
+        # La funzione genera_pdf_simulazione gestisce internamente la conversione € -> Eur
         pdf_output = genera_pdf_simulazione(
             cliente,
             periodo_str,
             tipo,
             offerta,
-            df, # DataFrame dei risultati (già formattati come stringa)
+            df, # DataFrame dei risultati
             totale_finale,
             fatt_attuale,
             diff
