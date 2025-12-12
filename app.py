@@ -301,10 +301,10 @@ col_periodo, col_mese1, col_mese2 = st.columns(3)
 with col_periodo:
     periodo = st.selectbox("Periodo di Fatturazione", ["Mensile","Bimestrale"], key='input_periodo')
 with col_mese1:
-    mese1 = st.selectbox("Mese di Inizio", MESI, key='input_mese1')
+    mese1 = st.selectbox("Mese 1", MESI, key='input_mese1')
 with col_mese2:
     if periodo == "Bimestrale":
-        mese2 = st.selectbox("Mese di Fine", MESI, key='input_mese2')
+        mese2 = st.selectbox("Mese 2", MESI, key='input_mese2')
     else:
         mese2 = None
 
