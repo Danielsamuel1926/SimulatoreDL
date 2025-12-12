@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
+from fpdf import FPDF
+import io
 
 # ==============================
 # STILE GENERALE
@@ -8,28 +10,9 @@ from streamlit_option_menu import option_menu
 st.markdown("""
 <style>
 body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-.header-container {
-    background: linear-gradient(90deg, #0b0c12, #253073);
-    padding: 20px;
-    text-align: center;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.big-btn {
-    background-color: #00BFFF;
-    color: white;
-    font-size: 18px;
-    padding: 10px 0px;
-    border-radius: 8px;
-    width: 100%;
-    font-weight: bold;
-    margin-top: 10px;
-    margin-bottom: 20px;
-}
+.header-container { background: linear-gradient(90deg, #0b0c12, #253073); padding: 20px; text-align: center; border-radius: 12px; margin-bottom: 20px; }
+.big-btn { background-color: #00BFFF; color: white; font-size: 18px; padding: 10px 0px; border-radius: 8px; width: 100%; font-weight: bold; margin-top: 10px; margin-bottom: 20px; }
 .big-btn:hover { background-color: #009ACD; }
-
 .stTable td, .stTable th { padding: 8px; }
 </style>
 """, unsafe_allow_html=True)
@@ -133,9 +116,16 @@ if st.button("Calcola Bolletta"):
         totale = 0
         righe = []
 
+        # Dettaglio Offerta
+        if tipo == "Luce":
+            SPREAD, COMM = OFFERTE_LUCE[offerta]
+        else:
+            SPREAD, COMM = OFFERTE_GAS[offerta]
+
+        st.info(f"💡 Offerta selezionata: {offerta}\nSpread: {SPREAD}\nCommissione: {COMM}")
+
         # ---------------- LUCE ----------------
         if tipo=="Luce":
-            SPREAD, COMM = OFFERTE_LUCE[offerta]
             prezzo_medio = sum([PUN[m] for m in mesi_idx])/num_mesi + SPREAD + DISPACCIAMENTO + ASOS
             materia = kwh * prezzo_medio
             sp_rete = kwh * 0.0445 * num_mesi
@@ -146,7 +136,7 @@ if st.button("Calcola Bolletta"):
 
             righe += [
                 {"Voce":f"Materia Energia ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
-                {"Voce":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
+                {"Voce":"Spesa rete e oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
                 {"Voce":"Quota potenza", "Importo (€)": f"{quota_pot:.2f}"},
                 {"Voce":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
                 {"Voce":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
@@ -156,7 +146,6 @@ if st.button("Calcola Bolletta"):
 
         # ---------------- GAS ----------------
         else:
-            SPREAD, COMM = OFFERTE_GAS[offerta]
             psv_avg = sum([PSV[m] for m in mesi_idx])/num_mesi
             materia = smc*(psv_avg+SPREAD+QUOTA_CONSUMO_GAS)
             sp_rete = QUOTA_VAR_DIST_GAS*smc + QUOTA_DIST_GAS
@@ -166,7 +155,7 @@ if st.button("Calcola Bolletta"):
 
             righe += [
                 {"Voce":"Materia Energia/PSV", "Importo (€)": f"{materia:.2f}"},
-                {"Voce":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
+                {"Voce":"Spesa rete e oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
                 {"Voce":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
                 {"Voce":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
                 {"Voce":"Accise+IVA", "Importo (€)": f"{iva:.2f}"}
@@ -184,13 +173,12 @@ if st.button("Calcola Bolletta"):
                     righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
                     totale += val
 
-        # ---------------- RISULTATI ----------------
+        # ---------------- VISUALIZZAZIONE ----------------
         df = pd.DataFrame(righe)
         st.subheader("📊 Scontrino Bolletta DL CEI")
         st.dataframe(df, hide_index=True)
-
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
-        
+
         diff = fatt_attuale - totale
         if diff > 0:
             st.success(f"Risparmio: {diff:.2f} €")
@@ -198,6 +186,36 @@ if st.button("Calcola Bolletta"):
             st.error(f"Aumento: {-diff:.2f} €")
         else:
             st.info("Totale uguale alla fattura attuale.")
+
+        # ---------------- PDF ----------------
+        pdf_buffer = io.BytesIO()
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, "Simulatore Luce & Gas - Bolletta", ln=True, align='C')
+        pdf.ln(10)
+
+        pdf.set_font("Arial", '', 12)
+        pdf.multi_cell(0, 8, f"Cliente: {cliente}\nOfferta: {offerta}\nSpread: {SPREAD}\nCommissione: {COMM}\n")
+
+        pdf.ln(5)
+        for r in righe:
+            pdf.cell(140, 8, r["Voce"], border=0)
+            pdf.cell(50, 8, str(r["Importo (€)"]), border=0, ln=True)
+
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 14)
+        pdf.cell(0, 10, f"Totale: {totale:.2f} €", ln=True)
+
+        pdf.output(pdf_buffer)
+        pdf_buffer.seek(0)
+
+        st.download_button(
+            label="📄 Scarica Bolletta in PDF",
+            data=pdf_buffer,
+            file_name="bolletta.pdf",
+            mime="application/pdf"
+        )
 
     except Exception as e:
         st.error(f"Errore nel calcolo: {e}")
