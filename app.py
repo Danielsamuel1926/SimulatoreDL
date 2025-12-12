@@ -280,6 +280,9 @@ if calcola:
             # Gestisce il caso di costo unitario per voce variabile (costo €/kWh o €/m³)
             elif unit:
                 return f"{val:.4f} €/{unit}"
+            # Per l'IVA nel Gas, mostriamo la percentuale
+            elif unit == "%":
+                 return f"{val*100:.0f} %" 
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
@@ -302,7 +305,7 @@ if calcola:
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"}
             ]
             totale = totale_imponibile + iva
 
@@ -326,12 +329,15 @@ if calcola:
             totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
             iva = totale_imponibile_iva * aliquota_iva
             
+            # Totale Accise e IVA
+            accise_iva_tot = accisa + iva
+            
             righe += [
                 {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
-                {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa + iva:.2f}"}
+                {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"} # MODIFICATO QUI
             ]
             totale = totale_imponibile_iva + accisa + iva
 
