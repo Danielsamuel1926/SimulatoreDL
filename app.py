@@ -78,8 +78,31 @@ ASOS = 0.03
 SPESA_RETE_VAR_LUCE_UNITARIO = 0.0445
 
 # ACCISA LUCE
-ACCISA_LUCE_ALIQUOTA = 0.0227 # €/kWh
-ACCISA_LUCE_SOGLIA_MENSILE = 150 # kWh/mese
+ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE = 0.0227 # €/kWh
+ACCISA_LUCE_SOGLIA_MENSILE_RESIDENTE = 150 # kWh/mese
+
+ACCISA_LUCE_TIPI = {
+    "Domestico Residente": {
+        "aliquota": ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE,
+        "soglia_mensile": ACCISA_LUCE_SOGLIA_MENSILE_RESIDENTE,
+        "descrizione": f"Oltre {ACCISA_LUCE_SOGLIA_MENSILE_RESIDENTE} kWh/mese, aliquota {ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE} €/kWh."
+    },
+    "Domestico Non Residente": {
+        "aliquota": 0.0227,  # Aliquota piena, senza esenzione iniziale (per semplicità)
+        "soglia_mensile": 0,
+        "descrizione": f"Aliquota piena: 0.0227 €/kWh."
+    },
+    "Uso Diverso (Bassa Tensione)": {
+        "aliquota": 0.0125, # Esempio di aliquota non domestica
+        "soglia_mensile": 0,
+        "descrizione": f"Aliquota ridotta: 0.0125 €/kWh."
+    },
+    "Esenzione Totale": {
+        "aliquota": 0.0,
+        "soglia_mensile": 99999, # Soglia molto alta per garantire esenzione
+        "descrizione": "Esenzione totale da Accisa."
+    }
+}
 
 # PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
@@ -113,12 +136,14 @@ def aliquota_iva_gas(smc_annuo):
 # INIZIALIZZAZIONE SESSION STATE
 # ==============================
 # Inizializza i valori con chiavi univoche
-for key in ["cliente","kwh","kw","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale"]:
+for key in ["cliente","kwh","kw","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale", "tipo_accisa_luce"]:
     if key not in st.session_state:
         if key == "kw":
             st.session_state[key] = 3.0
         elif key == "cliente":
             st.session_state[key] = ""
+        elif key == "tipo_accisa_luce":
+             st.session_state[key] = "Domestico Residente"
         else:
             st.session_state[key] = 0.0
 
@@ -159,7 +184,20 @@ if tipo == "Luce":
         default_index = kw_options.index(st.session_state.kw) if st.session_state.kw in kw_options else 4
         kw = st.selectbox("Potenza impegnata (kW)", kw_options, index=default_index, key='input_kw')
         st.session_state.kw = kw
+    
     offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()), key='input_offerta_luce')
+    
+    # NUOVO SELECTBOX PER ACCISE LUCE
+    tipo_accisa_luce = st.selectbox(
+        "Tipologia Accisa (Luce)", 
+        list(ACCISA_LUCE_TIPI.keys()),
+        index=list(ACCISA_LUCE_TIPI.keys()).index(st.session_state.tipo_accisa_luce),
+        key='input_tipo_accisa_luce'
+    )
+    st.session_state.tipo_accisa_luce = tipo_accisa_luce
+    st.info(f"**Dettaglio Accisa:** {ACCISA_LUCE_TIPI[tipo_accisa_luce]['descrizione']}")
+    # FINE NUOVO SELECTBOX
+    
     canone_tv = st.number_input("Canone TV (€)", value=0.0, min_value=0.0, key='input_canone_tv')
 else:
     with col_cons_1:
@@ -206,6 +244,7 @@ if reset:
         else:
             st.session_state[key] = 0.0
     st.session_state.kw = 3.0
+    st.session_state.tipo_accisa_luce = "Domestico Residente"
     st.rerun()
 
 # ==============================
@@ -300,10 +339,15 @@ if calcola:
             # Oneri di Sistema (Fissi)
             oneri = ONERI_SISTEMA * num_mesi
             
+            # Recupero Aliquota e Soglia Accisa dalla selezione utente
+            accisa_config = ACCISA_LUCE_TIPI[st.session_state.tipo_accisa_luce]
+            accisa_aliquota = accisa_config["aliquota"]
+            accisa_soglia_mensile = accisa_config["soglia_mensile"]
+            
             # Calcolo Accisa Luce
-            soglia_consumo_accisa = ACCISA_LUCE_SOGLIA_MENSILE * num_mesi
+            soglia_consumo_accisa = accisa_soglia_mensile * num_mesi
             consumo_tassabile = max(0, consumo - soglia_consumo_accisa)
-            accisa_luce = consumo_tassabile * ACCISA_LUCE_ALIQUOTA
+            accisa_luce = consumo_tassabile * accisa_aliquota
 
             # Base Imponibile IVA 10%
             totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
@@ -338,8 +382,13 @@ if calcola:
             
             # IVA
             aliquota_iva = aliquota_iva_gas(smc_annuo)
-            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT + accisa_gas
-            iva = totale_imponibile_iva * aliquota_iva
+            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
+            # L'accisa nel Gas è parte della base imponibile IVA per il Gas domestico (su aliquota ridotta)
+            # MA qui per la Luce l'accisa è fuori base imponibile IVA per la simulazione standard 10%.
+            # Manteniamo la logica precedente per il Gas per uniformità con le simulazioni standard
+            # ovvero: BaseImponibileGas = Materia + Rete + Oneri + Commercializzazione.
+            # Accisa è una voce a sé, l'IVA si calcola su base imponibile + accisa.
+            iva = (totale_imponibile_iva + accisa_gas) * aliquota_iva
             
             # Totale Accise e IVA (per visualizzazione unificata nel Gas)
             accise_iva_tot = accisa_gas + iva
@@ -352,14 +401,15 @@ if calcola:
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
             ]
             
-            totale = totale_imponibile_iva + iva
+            totale = totale_imponibile_iva + accise_iva_tot
 
         # ---------------- VOCI FISCALI (TASSE) ----------------
 
         if tipo == "Luce":
             # Accisa Luce (separata)
-            righe.append({"Descrizione":f"Accisa Luce (oltre {ACCISA_LUCE_SOGLIA_MENSILE*num_mesi:.0f} kWh)", 
-                          "Costo Unitario (€)": fmt_unit(ACCISA_LUCE_ALIQUOTA, "kWh"), 
+            accisa_desc = f"Accisa Luce (Soglia {accisa_soglia_mensile*num_mesi:.0f} kWh)"
+            righe.append({"Descrizione":accisa_desc, 
+                          "Costo Unitario (€)": fmt_unit(accisa_aliquota, "kWh"), 
                           "Importo (€)": f"{accisa_luce:.2f}"})
             # IVA Luce
             righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
