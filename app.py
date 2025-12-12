@@ -37,6 +37,27 @@ div.stButton > button {
     height: 40px;
 }
 
+/* Stile per il box dell'offerta */
+.box-offerta-custom {
+    background: linear-gradient(90deg, #186020, #968a11);
+    color:white;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+}
+.box-offerta-custom h6, .box-offerta-custom p {
+    margin: 3px 0; /* Riduco i margini interni */
+}
+.box-offerta-custom p {
+    font-size: 14px;
+}
+.box-offerta-custom p:last-child {
+    font-weight: bold;
+    font-size: 15px;
+    margin-top: 5px;
+}
+
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -271,7 +292,8 @@ if reset:
 # CALCOLO BOLLETTA
 # ==============================
 if calcola:
-    st.markdown("## 🧾 Risultato della Simulazione")
+    # MODIFICA: Ridotto a ####
+    st.markdown("#### 🧾 Risultato della Simulazione")
     
     try:
         if not st.session_state.cliente:
@@ -353,17 +375,18 @@ if calcola:
             return "N/A"
 
         # --- BOX DETTAGLIO COSTI ---
+        # Determino il testo per il costo totale della materia
+        costo_totale_materia_text = (
+            f"Costo Totale Materia ({costo_indicizzato_base} + spread + oneri variabili): "
+            f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
+        )
+        
+        # MODIFICA: Classe CSS personalizzata 'box-offerta-custom' usata sopra per lo stile
         st.markdown(f"""
-        <div style="
-            background: linear-gradient(90deg, #186020, #968a11);
-            color:white;
-            padding:15px;
-            border-radius:12px;
-            margin-bottom:15px;
-        ">
+        <div class="box-offerta-custom">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
             <p style="margin:0; font-size:14px;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
-            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
+            <p style="margin:5px 0 0 0; font-weight:bold;">{costo_totale_materia_text}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -485,8 +508,8 @@ if calcola:
         
         # --- STAMPA FINALE ---
         
-        # Titolo "SCONTRINO DELL'ENERGIA" (Usando <h2> Markdown)
-        st.markdown("## 🧾 SCONTRINO DELL'ENERGIA")
+        # MODIFICA: Ridotto a ####
+        st.markdown("#### 🧾 SCONTRINO DELL'ENERGIA")
 
         df = pd.DataFrame(righe)
         st.dataframe(df, hide_index=True, use_container_width=True)
