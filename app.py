@@ -26,7 +26,7 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 20px; /* Aggiunge spazio tra le tabelle */
+    margin-bottom: 20px;
 }
 
 /* Pulsanti */
@@ -224,13 +224,8 @@ if calcola:
             mesi_idx.append(MESI.index(mese2) + 1)
         
         num_mesi = len(mesi_idx)
+        righe = [] # Unico scontrino
         
-        # Inizializzo le liste separate per le tre tabelle
-        righe_fornitura = []
-        righe_tasse = []
-        righe_extra = []
-
-
         # --- Dati offerta ---
         if tipo == "Luce":
             SPREAD, COMM_ANNUO = OFFERTE_LUCE[offerta] # COMM_ANNUO è in €/anno
@@ -292,7 +287,9 @@ if calcola:
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
 
-        # ---------------- LUCE (Energia Elettrica) ----------------
+        # ---------------- INIZIO VOCI DI FORNITURA ----------------
+        st.markdown("#### 💡 Spese per la fornitura e gestione")
+
         if tipo=="Luce":
             # Spesa per la Rete (Quota Variabile)
             sp_rete_variabile = consumo * SPESA_RETE_VAR_LUCE_UNITARIO
@@ -305,8 +302,8 @@ if calcola:
             totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
             iva = totale_imponibile * 0.10
             
-            # Tabella 1: Fornitura
-            righe_fornitura += [
+            # Voci Luce
+            righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
@@ -314,8 +311,7 @@ if calcola:
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
-            # Tabella 2: Tasse
-            righe_tasse.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
+            # Tasse Luce
             totale = totale_imponibile + iva
 
         # ---------------- GAS (Gas Naturale) ----------------
@@ -341,54 +337,50 @@ if calcola:
             # Totale Accise e IVA
             accise_iva_tot = accisa + iva
             
-            # Tabella 1: Fornitura
-            righe_fornitura += [
+            # Voci Gas
+            righe += [
                 {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
             ]
             
-            # Tabella 2: Tasse
-            righe_tasse.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
+            # Tasse Gas
             totale = totale_imponibile_iva + accisa + iva
 
-        # ---------------- EXTRA (Canone TV, Bonus, Ricalcoli) ----------------
+        # ---------------- VOCI FISCALI (TASSE) ----------------
+        st.markdown("#### 🏛️ Spese fiscali (IVA, Accise)")
+        
+        if tipo == "Luce":
+            righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
+        else:
+            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
+
+
+        # ---------------- VOCI EXTRA ----------------
+        if canone_tv > 0 or ricalcoli != 0 or altre != 0 or bonus > 0:
+            st.markdown("#### ➕ Voci extra, conguagli e bonus")
         
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
             # Il canone TV viene visualizzato come costo unitario di sé stesso
-            righe_extra.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f}"})
+            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f}"})
             totale += canone_tv
 
         for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
             if val != 0:
-                righe_extra.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f}"})
+                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f}"})
                 totale += val
         
         # Il bonus sociale va sempre sottratto
         if bonus > 0:
-             righe_extra.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f}"})
+             righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f}"})
              totale -= abs(bonus)
         
-        # --- VISUALIZZAZIONE DELLE 3 TABELLE ---
+        # --- RISULTATI FINALI (Unico DataFrame) ---
         
-        if righe_fornitura:
-            st.markdown("#### 💡 Spese per la fornitura e gestione")
-            df_fornitura = pd.DataFrame(righe_fornitura)
-            st.dataframe(df_fornitura, hide_index=True, use_container_width=True)
-
-        if righe_tasse:
-            st.markdown("#### 🏛️ Spese fiscali (IVA, Accise)")
-            df_tasse = pd.DataFrame(righe_tasse)
-            st.dataframe(df_tasse, hide_index=True, use_container_width=True)
-            
-        if righe_extra:
-            st.markdown("#### ➕ Voci extra, conguagli e bonus")
-            df_extra = pd.DataFrame(righe_extra)
-            st.dataframe(df_extra, hide_index=True, use_container_width=True)
-        
-        # --- RISULTATO FINALE ---
+        df = pd.DataFrame(righe)
+        st.dataframe(df, hide_index=True, use_container_width=True)
         
         totale_finale = max(0, totale) # Il totale non può essere negativo
         
