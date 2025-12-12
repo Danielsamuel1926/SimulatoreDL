@@ -130,8 +130,6 @@ fatt_attuale = st.number_input("Importo fattura attuale (€)")
 col1, col2 = st.columns(2)
 calcola = col1.button("Calcola", key="calcola")
 
-if reset:
-    st.experimental_rerun()  # Pulisce tutti i dati
 
 # ==============================
 # CALCOLO BOLLETTA
@@ -220,7 +218,7 @@ if calcola:
 
         # ---------------- RISULTATI ----------------
         df = pd.DataFrame(righe)
-        st.subheader("📊 Scontrino Bolletta DL CEI")
+        st.subheader("📊 Scontrino Bolletta DL")
         st.dataframe(df, hide_index=True)
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
         
