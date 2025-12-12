@@ -152,12 +152,15 @@ calcola = col1.button("Calcola")
 reset = col2.button("Reset")
 
 if reset:
-    for key in st.session_state.keys():
-        if isinstance(st.session_state[key], (int,float)):
-            st.session_state[key] = 0
-        else:
-            st.session_state[key] = ""
-    st.experimental_rerun()
+    st.session_state.cliente = ""
+    st.session_state.kwh = 0
+    st.session_state.kw = 2
+    st.session_state.smc = 0
+    st.session_state.smc_annuo = 0
+    st.session_state.bonus = 0
+    st.session_state.ricalcoli = 0
+    st.session_state.altre = 0
+    st.session_state.fatt_attuale = 0
 
 # ==============================
 # CALCOLO BOLLETTA
