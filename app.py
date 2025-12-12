@@ -305,8 +305,12 @@ if calcola:
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                {"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"}
             ]
+            
+            # --- SEPARATORE TASSE LUCE ---
+            righe.append({"Descrizione": "--- SPESE FISCALI ---", "Costo Unitario (€)": "---", "Importo (€)": "---"})
+
+            righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
             totale = totale_imponibile + iva
 
         # ---------------- GAS (Gas Naturale) ----------------
@@ -337,11 +341,20 @@ if calcola:
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
-                {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"} # MODIFICATO QUI
             ]
+            
+            # --- SEPARATORE TASSE GAS ---
+            righe.append({"Descrizione": "--- SPESE FISCALI ---", "Costo Unitario (€)": "---", "Importo (€)": "---"})
+            
+            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
             totale = totale_imponibile_iva + accisa + iva
 
         # ---------------- EXTRA (Canone TV, Bonus, Ricalcoli) ----------------
+        
+        # --- SEPARATORE VOCI EXTRA ---
+        if canone_tv > 0 or ricalcoli != 0 or altre != 0 or bonus > 0:
+            righe.append({"Descrizione": "--- VOCI EXTRA E CONGUAGLI ---", "Costo Unitario (€)": "---", "Importo (€)": "---"})
+        
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
             # Il canone TV viene visualizzato come costo unitario di sé stesso
