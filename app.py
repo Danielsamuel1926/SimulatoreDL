@@ -397,7 +397,7 @@ if reset:
 # CALCOLO BOLLETTA E DOWNLOAD PDF
 # ==============================
 if calcola:
-    st.markdown("#### 🧾 Risultato della Simulazione")
+    st.markdown("#### 🧾 Box dell'offerta")
     
     try:
         if not st.session_state.cliente:
