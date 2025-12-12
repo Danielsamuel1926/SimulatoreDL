@@ -209,7 +209,7 @@ if st.button("Calcola Bolletta"):
 
         # ---------------- RISULTATI ----------------
         df = pd.DataFrame(righe)
-        st.subheader("📊 Scontrino Bolletta DL CEI")
+        st.subheader("📊 Scontrino Bolletta DL")
         st.dataframe(df, hide_index=True)
         st.markdown(f"### 💰 Totale: **{totale:.2f} €**")
         
