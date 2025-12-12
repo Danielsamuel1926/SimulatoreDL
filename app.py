@@ -74,6 +74,7 @@ QUOTA_POTENZA = 2.10
 DISPACCIAMENTO = 0.020
 ONERI_SISTEMA = 1.90
 ASOS = 0.03
+SPESA_RETE_VAR_LUCE_UNITARIO = 0.0445
 
 # PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
@@ -243,14 +244,12 @@ if calcola:
         
         if tipo=="Luce":
             # Costo materia prima: PUN + Spread + Dispacciamento + ASOS (Variabile)
-            prezzo_unitario = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
-            materia = consumo * prezzo_unitario
+            prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
+            materia = consumo * prezzo_unitario_materia
         else:
             # Costo materia prima: PSV + Spread + Quota Consumo Gas (Variabile)
-            prezzo_unitario = prezzo_medio_indicizzato + SPREAD + QUOTA_CONSUMO_GAS
-            materia = consumo * prezzo_unitario
-
-        costo_unitario_display = materia / consumo if consumo != 0 else 0
+            prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + QUOTA_CONSUMO_GAS
+            materia = consumo * prezzo_unitario_materia
 
         # --- BOX DETTAGLIO COSTI ---
         st.markdown(f"""
@@ -263,16 +262,20 @@ if calcola:
         ">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
             <p style="margin:0; font-size:14px;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
-            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread e oneri variabili): {prezzo_unitario:.4f} €/{unita_misura}</p>
+            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread e oneri variabili): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
         </div>
         """, unsafe_allow_html=True)
 
         totale = 0.0
 
+        # Funzione helper per formattare l'unità o N/A
+        def fmt_unit(val, unit=""):
+            return f"{val:.4f} €/{unit}" if val else "N/A"
+
         # ---------------- LUCE (Energia Elettrica) ----------------
         if tipo=="Luce":
             # Spesa per la Rete (Quota Variabile)
-            sp_rete_variabile = consumo * 0.0445
+            sp_rete_variabile = consumo * SPESA_RETE_VAR_LUCE_UNITARIO
             # Quota Potenza (Fissa)
             quota_pot = kw * QUOTA_POTENZA * num_mesi
             # Oneri di Sistema (Fissi)
@@ -285,29 +288,32 @@ if calcola:
             iva = totale_imponibile * 0.10
             
             righe += [
-                {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Importo (€)": f"{quota_pot:.2f}"},
-                {"Descrizione":"Oneri di sistema (Fissi)", "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete (Variabile)", "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                {"Descrizione":"IVA 10%", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{quota_pot:.2f}"},
+                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{oneri:.2f}"},
+                {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
             ]
             totale = totale_imponibile + iva
 
         # ---------------- GAS (Gas Naturale) ----------------
         else:
             # Spesa per la Rete (Fissa + Variabile)
-            sp_rete = QUOTA_VAR_DIST_GAS * consumo + QUOTA_DIST_GAS
+            sp_rete_var_unitario = QUOTA_VAR_DIST_GAS # La parte variabile della spesa rete
+            sp_rete = sp_rete_var_unitario * consumo + QUOTA_DIST_GAS
             
             # Oneri di Sistema (Fissi + Variabili)
             oneri_fissi = ONERI_SISTEMA_GAS * num_mesi
-            oneri_var = (0.07 * consumo) + (0.12 * consumo)
+            oneri_var_unitario = (0.07 + 0.12) # Costo unitario totale oneri variabili gas
+            oneri_var = oneri_var_unitario * consumo
             
             # Commercializzazione (Fissa)
             comm_tot = COMM * num_mesi
             
             # Accise (Variabili)
-            accisa = accisa_annua_gas(smc_annuo) * consumo
+            accisa_unitario = accisa_annua_gas(smc_annuo)
+            accisa = accisa_unitario * consumo
             
             # IVA
             aliquota_iva = aliquota_iva_gas(smc_annuo)
@@ -315,28 +321,28 @@ if calcola:
             iva = totale_imponibile_iva * aliquota_iva
             
             righe += [
-                {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Descrizione":"Spesa Rete (Fissa + Variabile)", "Importo (€)": f"{sp_rete:.2f}"},
-                {"Descrizione":"Oneri di sistema (Fissi + Variabili)", "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
-                {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Importo (€)": f"{accisa + iva:.2f}"}
+                {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
+                {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
+                {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa + iva:.2f}"}
             ]
             totale = totale_imponibile_iva + accisa + iva
 
         # ---------------- EXTRA (Canone TV, Bonus, Ricalcoli) ----------------
         # Voci Aggiuntive/Sottrattive
         if canone_tv > 0:
-            righe.append({"Descrizione": "Canone TV", "Importo (€)": f"{canone_tv:.2f}"})
+            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": "N/A", "Importo (€)": f"{canone_tv:.2f}"})
             totale += canone_tv
 
         for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
             if val != 0:
-                righe.append({"Descrizione": voce, "Importo (€)": f"{val:.2f}"})
+                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f}"})
                 totale += val
         
         # Il bonus sociale va sempre sottratto
         if bonus > 0:
-             righe.append({"Descrizione": "Bonus Sociale", "Importo (€)": f"{-abs(bonus):.2f}"})
+             righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f}"})
              totale -= abs(bonus)
         
         # --- RISULTATI ---
