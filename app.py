@@ -227,17 +227,21 @@ if calcola:
 
         # --- Dati offerta ---
         if tipo == "Luce":
-            SPREAD, COMM = OFFERTE_LUCE[offerta]
+            SPREAD, COMM_ANNUO = OFFERTE_LUCE[offerta] # COMM_ANNUO è in €/anno
             lista_prezzi = PUN
             consumo = kwh
             unita_misura = "kWh"
             costo_indicizzato_base = "PUN"
         else:
-            SPREAD, COMM = OFFERTE_GAS[offerta]
+            SPREAD, COMM_ANNUO = OFFERTE_GAS[offerta] # COMM_ANNUO è in €/anno
             lista_prezzi = PSV
             consumo = smc
             unita_misura = "m³"
             costo_indicizzato_base = "PSV"
+
+        # Costo Commercializzazione Mensile
+        COMM_MENSILE = COMM_ANNUO / 12
+        COMM_TOT = COMM_MENSILE * num_mesi
 
         # --- Calcolo costi variabili ---
         prezzo_medio_indicizzato = sum([lista_prezzi[m] for m in mesi_idx])/num_mesi
@@ -286,18 +290,16 @@ if calcola:
             quota_pot = kw * QUOTA_POTENZA * num_mesi
             # Oneri di Sistema (Fissi)
             oneri = ONERI_SISTEMA * num_mesi
-            # Commercializzazione (Fissa)
-            comm_tot = COMM * num_mesi
             
             # Base Imponibile IVA 10%
-            totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + comm_tot
+            totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
             iva = totale_imponibile * 0.10
             
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"}, # MODIFICATO QUI
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
-                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"}, # MODIFICATO QUI
+                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
                 {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
             ]
@@ -314,21 +316,18 @@ if calcola:
             oneri_var_unitario = (0.07 + 0.12) # Costo unitario totale oneri variabili gas
             oneri_var = oneri_var_unitario * consumo
             
-            # Commercializzazione (Fissa)
-            comm_tot = COMM * num_mesi
-            
             # Accise (Variabili)
             accisa_unitario = accisa_annua_gas(smc_annuo)
             accisa = accisa_unitario * consumo
             
             # IVA
             aliquota_iva = aliquota_iva_gas(smc_annuo)
-            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + comm_tot
+            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
             iva = totale_imponibile_iva * aliquota_iva
             
             righe += [
                 {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
-                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"}, # MODIFICATO QUI
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
                 {"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa + iva:.2f}"}
