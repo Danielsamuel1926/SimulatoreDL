@@ -353,7 +353,7 @@ else:
 
 # Input Dati Comuni/Aggiuntivi
 st.markdown("---")
-st.markdown("### ➕ Voci Aggiuntive e Confronto:")
+st.markdown("### ➕ Voci Aggiuntive Altri Importi:")
 
 col_extra_1, col_extra_2 = st.columns(2)
 with col_extra_1:
