@@ -121,6 +121,11 @@ for key in ["cliente","kwh","kw","smc","smc_annuo","bonus","ricalcoli","altre","
 # ==============================
 st.markdown("### 📝 Dati del Cliente e Consumi:")
 
+# === CAMPO CLIENTE IN PRIMIS ===
+cliente = st.text_input("Nome Cliente", st.session_state.cliente, key='input_cliente_final').upper()
+st.session_state.cliente = cliente
+# ===============================
+
 # Contenitore per i dati del periodo
 col_periodo, col_mese1, col_mese2 = st.columns(3)
 
@@ -173,11 +178,12 @@ with col_extra_2:
     fatt_attuale = st.number_input("Importo Fattura Attuale per Confronto (€)", value=st.session_state.fatt_attuale, key='input_fatt_attuale')
 
 # Memorizzazione dello stato della sessione (assicura la persistenza dei dati)
+# Nota: il cliente è già stato memorizzato sopra
 st.session_state.bonus = bonus
 st.session_state.ricalcoli = ricalcoli
 st.session_state.altre = altre
 st.session_state.fatt_attuale = fatt_attuale
-st.session_state.cliente = st.text_input("Nome Cliente", st.session_state.cliente, key='input_cliente_final').upper()
+
 
 # ==============================
 # PULSANTI CALCOLA E RESET
@@ -204,6 +210,10 @@ if calcola:
     st.markdown("## 🧾 Risultato della Simulazione")
     
     try:
+        if not st.session_state.cliente:
+            st.warning("⚠️ Per favore, inserisci il Nome Cliente per procedere con la simulazione.")
+            st.stop()
+        
         # Calcolo degli indici del mese (1-indexed per PUN/PSV)
         mesi_idx = [MESI.index(mese1) + 1]
         if periodo=="Bimestrale":
@@ -355,4 +365,4 @@ if calcola:
         st.error(f"Errore nel calcolo: {e}")
 
 st.markdown("---")
-st.info("La simulazione è indicativa e non ha valore contrattuale.")
+st.info("La simulazione è indicativa e ha valore contrattuale.")
