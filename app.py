@@ -124,7 +124,7 @@ QUOTA_VAR_DIST_GAS = 0.171530
 ONERI_SISTEMA_GAS = 1.50 # €/mese
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
-        "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
+        LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
 # Funzioni di calcolo per il Gas
 def accisa_annua_gas(smc_annuo):
@@ -320,19 +320,19 @@ if calcola:
         prezzo_medio_indicizzato = sum([lista_prezzi[m] for m in mesi_idx])/num_mesi
         
         if tipo=="Luce":
-            # Costo materia prima: PUN + Spread + Dispacciamento + ASOS (Variabile)
+            # Calcolo corretto che include tutti i costi variabili (Dispacciamento e ASOS inclusi)
             prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
             materia = consumo * prezzo_unitario_materia
             
-            # Descrizione Dettagliata per Luce
-            materia_descrizione = f"Materia Energia ({consumo:.2f} {unita_misura}) [PUN + Spread + Dispacciamento({DISPACCIAMENTO:.3f}) + ASOS({ASOS:.3f})]"
+            # Descrizione Semplificata per Luce (Come richiesto)
+            materia_descrizione = f"Materia Energia (variabile) ({consumo:.2f} {unita_misura})"
         else:
             # Costo materia prima: PSV + Spread + Quota Consumo Gas (Variabile)
             prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + QUOTA_CONSUMO_GAS
             materia = consumo * prezzo_unitario_materia
             
-            # Descrizione Dettagliata per Gas
-            materia_descrizione = f"Materia Energia/PSV ({consumo:.2f} {unita_misura}) [PSV + Spread + Quota Consumo({QUOTA_CONSUMO_GAS:.3f})]"
+            # Descrizione Semplificata per Gas
+            materia_descrizione = f"Materia Energia/PSV (variabile) ({consumo:.2f} {unita_misura})"
 
 
         # Funzione helper per formattare l'unità o N/A
@@ -413,6 +413,9 @@ if calcola:
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                # Aggiungo la riga per il Dispacciamento come voce separata, ma solo come "spiegazione"
+                # Il suo valore è già in 'Materia', quindi lo trattiamo come nota
+                {"Descrizione":f"Dispacciamento (già incluso in Materia)", "Costo Unitario (€)": fmt_unit(DISPACCIAMENTO, "kWh"), "Importo (€)": "0.00"},
             ]
             
             totale = totale_imponibile + accise_iva_tot
