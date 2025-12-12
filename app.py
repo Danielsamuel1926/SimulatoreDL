@@ -217,7 +217,7 @@ if calcola:
             comm_tot = COMM * num_mesi
             iva = (materia+sp_rete+quota_pot+oneri+comm_tot)*0.10
             righe += [
-                {"Descrizione":f"Materia Energia ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":f"Quota per consumi ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":"Quota potenza", "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
