@@ -288,7 +288,7 @@ if calcola:
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Importo (€)": f"{materia:.2f}"},
                 {"Descrizione":"Commercializ. (Fissa)", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Descrizione":"Quota Potenza (Fissa)", "Importo (€)": f"{quota_pot:.2f}"},
+                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Importo (€)": f"{quota_pot:.2f}"}, # AGGIORNAMENTO QUI
                 {"Descrizione":"Oneri di sistema (Fissi)", "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Importo (€)": f"{sp_rete_variabile:.2f}"},
                 {"Descrizione":"IVA 10%", "Importo (€)": f"{iva:.2f}"}
