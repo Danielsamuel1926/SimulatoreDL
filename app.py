@@ -152,7 +152,7 @@ for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcol
         else:
             st.session_state[key] = 0.0
     
-    # CONTROLLO DI ROBUSTEZZA PER LA CHIAVE ACCISA (RISOLVE L'ERRORE)
+    # CONTROLLO DI ROBUSTEZZA PER LA CHIAVE ACCISA
     if key == "tipo_accisa_luce" and st.session_state.tipo_accisa_luce not in ACCISA_LUCE_TIPI.keys():
         # Se il valore salvato nella sessione non è una chiave valida, usiamo il default.
         st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
@@ -349,6 +349,7 @@ if calcola:
         """, unsafe_allow_html=True)
 
         totale = 0.0
+        accise_iva_tot = 0.0
 
         # ---------------- VOCI DI FORNITURA ----------------
         if tipo=="Luce":
@@ -382,6 +383,9 @@ if calcola:
             # L'IVA si applica su (Base Imponibile + Accisa)
             iva = (totale_imponibile + accisa_luce) * 0.10
             
+            # Totale Accise e IVA per la riga riepilogativa
+            accise_iva_tot = accisa_luce + iva
+            
             # Voci Luce
             righe += [
                 {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
@@ -391,7 +395,7 @@ if calcola:
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
             ]
             
-            totale = totale_imponibile + accisa_luce + iva
+            totale = totale_imponibile + accise_iva_tot
 
         # ---------------- GAS (Gas Naturale) ----------------
         else:
@@ -430,16 +434,14 @@ if calcola:
         # ---------------- VOCI FISCALI (TASSE) ----------------
 
         if tipo == "Luce":
-            # Accisa Luce (separata)
-            accisa_desc = f"Accisa Luce ({st.session_state.tipo_accisa_luce})"
-            righe.append({"Descrizione":accisa_desc, 
-                          "Costo Unitario (€)": fmt_unit(accisa_aliquota, "kWh"), 
-                          "Importo (€)": f"{accisa_luce:.2f}"})
-            # IVA Luce
-            righe.append({"Descrizione":"IVA 10%", "Costo Unitario (€)": fmt_unit(0.10, "%"), "Importo (€)": f"{iva:.2f}"})
+            # Luce: Accisa e IVA unite come richiesto
+            righe.append({"Descrizione":"Accise + IVA (10%)", 
+                          "Costo Unitario (€)": "N/A", 
+                          "Importo (€)": f"{accise_iva_tot:.2f}"})
         else:
-            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
-            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
+            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas (logica preesistente)
+            aliquota_iva_gas_attuale = aliquota_iva_gas(smc_annuo) # Recupera l'aliquota Gas corretta
+            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva_gas_attuale*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva_gas_attuale, "%"), "Importo (€)": f"{accise_iva_tot:.2f}"})
 
 
         # ---------------- VOCI EXTRA ----------------
