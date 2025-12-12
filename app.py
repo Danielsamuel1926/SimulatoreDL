@@ -487,7 +487,7 @@ if calcola:
         )
 
         # 2. Dettaglio Spread
-        spread_text = f"Spread Consumo: **{SPREAD:.4f} €/{unita_prezzo}**"
+        spread_text = f"Costo Spread: **{SPREAD:.4f} €/{unita_prezzo}**"
 
         # 3. Dettaglio Commercializzazione
         comm_annua_text = f"Costo Comm. Anno: **{costo_annuo_commercializzazione:.2f} €/anno** ({COMM_MENSILE:.2f} €/mese)"
