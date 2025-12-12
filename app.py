@@ -191,7 +191,7 @@ if calcola:
         # ---------------- BOX OFFERTA ----------------
         st.markdown(f"""
         <div style="
-            background: linear-gradient(90deg,#063b0c,#032407);
+            background: linear-gradient(90deg,#063b0c,#615b02);
             color:white;
             padding:15px;
             border-radius:12px;
