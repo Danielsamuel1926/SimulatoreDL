@@ -23,7 +23,7 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     font-size: 18px;
     padding: 10px 0px;
     border-radius: 8px;
-    width: 100%;
+    width: 48%;
     font-weight: bold;
     margin-top: 10px;
     margin-bottom: 20px;
@@ -125,9 +125,19 @@ altre = st.number_input("Altre Partite (€)")
 fatt_attuale = st.number_input("Importo fattura attuale (€)")
 
 # ==============================
+# PULSANTI CALCOLA E RESET
+# ==============================
+col1, col2 = st.columns(2)
+calcola = col1.button("Calcola", key="calcola")
+reset = col2.button("Reset", key="reset")
+
+if reset:
+    st.experimental_rerun()  # Pulisce tutti i dati
+
+# ==============================
 # CALCOLO BOLLETTA
 # ==============================
-if st.button("Calcola Bolletta"):
+if calcola:
     try:
         mesi_idx = [MESI.index(mese1)] if periodo=="Mensile" else [MESI.index(mese1), MESI.index(mese2)]
         num_mesi = len(mesi_idx)
@@ -149,7 +159,9 @@ if st.button("Calcola Bolletta"):
             border-radius:12px;
             margin-bottom:15px;
         ">
+            <h4 style="margin:0;">Cliente: {cliente}</h4>
             <h4 style="margin:0;">Offerta Selezionata: {offerta}</h4>
+            <p style="margin:0;">Potenza: {kw if tipo=='Luce' else 'N/A'} kW</p>
             <p style="margin:0;">Dettaglio costi:</p>
             <ul style="margin:5px 0 0 15px; padding:0;">
                 <li>Spread: {SPREAD:.4f} €/unità</li>
@@ -169,12 +181,12 @@ if st.button("Calcola Bolletta"):
             iva = (materia+sp_rete+quota_pot+oneri+comm_tot)*0.10
 
             righe += [
-                {"Voce":f"Materia Energia ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
-                {"Voce":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
-                {"Voce":"Quota potenza", "Importo (€)": f"{quota_pot:.2f}"},
-                {"Voce":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
-                {"Voce":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Voce":"Accise+IVA", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":f"Materia Energia ({kwh} kWh)", "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
+                {"Descrizione":"Quota potenza", "Importo (€)": f"{quota_pot:.2f}"},
+                {"Descrizione":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
+                {"Descrizione":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":"Accise+IVA", "Importo (€)": f"{iva:.2f}"}
             ]
             totale += materia+sp_rete+quota_pot+oneri+comm_tot+iva
 
@@ -188,11 +200,11 @@ if st.button("Calcola Bolletta"):
             iva = accisa_annua_gas(smc_annuo)*smc + (materia+sp_rete+oneri+comm_tot)*aliquota_iva_gas(smc_annuo)
 
             righe += [
-                {"Voce":"Materia Energia/PSV", "Importo (€)": f"{materia:.2f}"},
-                {"Voce":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
-                {"Voce":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
-                {"Voce":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
-                {"Voce":"Accise+IVA", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":"Materia Energia/PSV", "Importo (€)": f"{materia:.2f}"},
+                {"Descrizione":"Spesa per la rete e gli oneri generali", "Importo (€)": f"{sp_rete:.2f}"},
+                {"Descrizione":"Oneri di sistema", "Importo (€)": f"{oneri:.2f}"},
+                {"Descrizione":"Commercializ.", "Importo (€)": f"{comm_tot:.2f}"},
+                {"Descrizione":"Accise+IVA", "Importo (€)": f"{iva:.2f}"}
             ]
             totale += materia+sp_rete+oneri+comm_tot+iva
 
@@ -201,10 +213,10 @@ if st.button("Calcola Bolletta"):
                           ("Altre Partite", altre), ("Canone TV", canone_tv)]:
             if val > 0:
                 if voce == "Bonus Sociale":
-                    righe.append({"Voce": voce, "Importo (€)": f"-{val:.2f}"})
+                    righe.append({"Descrizione": voce, "Importo (€)": f"-{val:.2f}"})
                     totale -= val
                 else:
-                    righe.append({"Voce": voce, "Importo (€)": f"{val:.2f}"})
+                    righe.append({"Descrizione": voce, "Importo (€)": f"{val:.2f}"})
                     totale += val
 
         # ---------------- RISULTATI ----------------
