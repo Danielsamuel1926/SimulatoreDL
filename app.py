@@ -188,7 +188,7 @@ if st.button("Calcola Bolletta", key="calc"):
             ]
             totale += materia+sp_rete+oneri+iva+comm_tot
 
-         for voce, val in [
+        for voce, val in [
           ("Bonus Sociale", bonus),
           ("Ricalcoli", ricalcoli),
           ("Altre Partite", altre),
