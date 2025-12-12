@@ -124,7 +124,7 @@ QUOTA_VAR_DIST_GAS = 0.171530
 ONERI_SISTEMA_GAS = 1.50 # €/mese
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
-        "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"] # VIRGOLETTE AGGIUNTE A LUGLIO
+        "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
 # Funzioni di calcolo per il Gas
 def accisa_annua_gas(smc_annuo):
@@ -324,7 +324,7 @@ if calcola:
             prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
             materia = consumo * prezzo_unitario_materia
             
-            # Descrizione Semplificata per Luce (Come richiesto)
+            # Descrizione Semplificata per Luce 
             materia_descrizione = f"Materia Energia (variabile) ({consumo:.2f} {unita_misura})"
         else:
             # Costo materia prima: PSV + Spread + Quota Consumo Gas (Variabile)
@@ -405,7 +405,7 @@ if calcola:
             # Totale Accise e IVA per la riga riepilogativa
             accise_iva_tot = accisa_luce + iva
             
-            # Voci Luce
+            # Voci Luce (Dispacciamento rimosso da qui)
             righe += [
                 {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
                 # Commercializzazione mostra il costo annuo dell'offerta
@@ -413,9 +413,6 @@ if calcola:
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
                 {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                # Aggiungo la riga per il Dispacciamento come voce separata, ma solo come "spiegazione"
-                # Il suo valore è già in 'Materia', quindi lo trattiamo come nota
-                {"Descrizione":f"Dispacciamento (già incluso in Materia)", "Costo Unitario (€)": fmt_unit(DISPACCIAMENTO, "kWh"), "Importo (€)": "0.00"},
             ]
             
             totale = totale_imponibile + accise_iva_tot
