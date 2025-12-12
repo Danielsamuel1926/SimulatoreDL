@@ -323,10 +323,17 @@ if calcola:
             # Costo materia prima: PUN + Spread + Dispacciamento + ASOS (Variabile)
             prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
             materia = consumo * prezzo_unitario_materia
+            
+            # Descrizione Dettagliata per Luce
+            materia_descrizione = f"Materia Energia ({consumo:.2f} {unita_misura}) [PUN + Spread + Dispacciamento({DISPACCIAMENTO:.3f}) + ASOS({ASOS:.3f})]"
         else:
             # Costo materia prima: PSV + Spread + Quota Consumo Gas (Variabile)
             prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + QUOTA_CONSUMO_GAS
             materia = consumo * prezzo_unitario_materia
+            
+            # Descrizione Dettagliata per Gas
+            materia_descrizione = f"Materia Energia/PSV ({consumo:.2f} {unita_misura}) [PSV + Spread + Quota Consumo({QUOTA_CONSUMO_GAS:.3f})]"
+
 
         # Funzione helper per formattare l'unità o N/A
         def fmt_unit(val, unit=""):
@@ -339,8 +346,8 @@ if calcola:
             # Per l'IVA nel Gas, mostriamo la percentuale
             elif unit == "%":
                  return f"{val*100:.0f} %" 
-            # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
-            elif unit == "anno": # NUOVA UNITÀ
+            # NUOVA UNITÀ: Costo Annuale di Commercializzazione
+            elif unit == "anno": 
                  return f"{val:.2f} €/{unit}"
             # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
             return "N/A"
@@ -356,7 +363,7 @@ if calcola:
         ">
             <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
             <p style="margin:0; font-size:14px;">Periodo: {mese1} {f"e {mese2}" if periodo=='Bimestrale' else ""}</p>
-            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread e oneri variabili): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
+            <p style="margin:5px 0 0 0; font-weight:bold;">Costo Totale Materia ({costo_indicizzato_base} + spread + oneri variabili): {prezzo_unitario_materia:.4f} €/{unita_misura}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -400,8 +407,8 @@ if calcola:
             
             # Voci Luce
             righe += [
-                {"Descrizione":f"Materia Energia ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
-                # VOCI COMMERCIALIZZAZIONE AGGIORNATE: mostriamo il costo annuo dell'offerta
+                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f}"},
+                # Commercializzazione mostra il costo annuo dell'offerta
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
@@ -436,8 +443,8 @@ if calcola:
             
             # Voci Gas
             righe += [
-                {"Descrizione":f"Materia Energia/PSV ({consumo:.2f} {unita_misura})", "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
-                # VOCI COMMERCIALIZZAZIONE AGGIORNATE: mostriamo il costo annuo dell'offerta
+                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f}"},
+                # Commercializzazione mostra il costo annuo dell'offerta
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f}"},
                 {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f}"},
                 {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f}"},
