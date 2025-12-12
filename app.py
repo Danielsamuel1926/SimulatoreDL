@@ -300,8 +300,8 @@ if calcola:
                 {"Descrizione":"Commercializ. (Fissa)", "Costo Unitario (€)": fmt_unit(COMM_MENSILE, "mese"), "Importo (€)": f"{COMM_TOT:.2f}"}, # MODIFICATO QUI
                 {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f}"},
                 {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f}"},
-                {"Descrizione":"Spesa Rete (Variabile)", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
-                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "N/A", "Importo (€)": f"{iva:.2f}"}
+                {"Descrizione":"Spesa Rete e oneri", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f}"},
+                {"Descrizione":"IVA 10%", "Costo Unitario (€)": "10%", "Importo (€)": f"{iva:.2f}"}
             ]
             totale = totale_imponibile + iva
 
