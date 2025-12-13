@@ -166,6 +166,21 @@ div.stButton > button {
     font-size: 15px;
     margin-top: 5px;
 }
+
+/* Stile per il pulsante download PDF custom */
+.stDownloadButton a {
+    background-color: #1d6600; 
+    color: white; 
+    padding: 10px 20px; 
+    text-align: center; 
+    text-decoration: none; 
+    display: block; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    width:100%; 
+    box-sizing:border-box;
+    margin-top: 10px; /* Spazio dal totale */
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -236,7 +251,7 @@ DEFAULT_ACCISA_LUCE_KEY = "Domestico Residente (Accisa differenziata)"
 
 # PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
-       0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
+        0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
 
 # OFFERTE_LUCE: (SPREAD, COSTO_COMM_ANNUO)
 OFFERTE_LUCE = {"Fast":(0.010,120.0),"F&F":(0.008,102.0),"Sind":(0.005,84.0),"Smart":(0.010,150.0)}
@@ -374,7 +389,7 @@ st.session_state.fatt_attuale = fatt_attuale
 # PULSANTI CALCOLA E RESET
 # ==============================
 st.markdown("---")
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2) # Rimosso col3
 
 calcola = col1.button("▶️ Calcola Simulazione")
 reset = col2.button("🗑️ Reset Dati")
@@ -529,7 +544,7 @@ if calcola:
                 
                 # Consumo del periodo tassabile con l'aliquota piena
                 consumo_tassabile = consumo * rapporto_tassabile
-            
+                
                 accisa_luce = consumo_tassabile * accisa_aliquota
             
             # Base Imponibile IVA 10%
@@ -650,7 +665,7 @@ if calcola:
                 st.info("Totale simulato uguale alla fattura attuale.")
 
         # ==================================================
-        # LOGICA DI DOWNLOAD PDF
+        # LOGICA DI DOWNLOAD PDF (SPOSTATA QUI)
         # ==================================================
         
         # Genera i byte del PDF chiamando la funzione
@@ -671,10 +686,11 @@ if calcola:
         filename = f"Report_Simulazione_{tipo}_{cliente.replace(' ', '_')}.pdf"
         
         # Crea il link di download
-        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{filename}" style="background-color: #1d6600; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; border-radius: 8px; font-weight: bold; width:100%; box-sizing:border-box;">⬇️ Scarica Scontrino PDF</a>'
+        # Utilizzo st.markdown per il pulsante customizzato con lo stile .stDownloadButton a
+        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{filename}" class="stDownloadButton">⬇️ Scarica Scontrino PDF</a>'
         
-        # Mostra il pulsante di download nella terza colonna
-        col3.markdown(href, unsafe_allow_html=True)
+        # Mostra il pulsante di download in una colonna per mantenere l'allineamento con il Totale
+        st.markdown(href, unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"Errore nel calcolo o generazione PDF: {e}")
