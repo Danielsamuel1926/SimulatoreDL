@@ -610,7 +610,7 @@ if calcola:
 
         for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
             if val != 0:
-                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f} €"})
+                righe.append({"Descrizione": voce, "Costo Unitario (€)": "_", "Importo (€)": f"{val:.2f} €"})
                 totale += val
         
         # Il bonus sociale va sempre sottratto
