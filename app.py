@@ -214,8 +214,8 @@ tipo = option_menu(
     styles={
         "container": {"background-color": "#c4c4c4", "padding": "0!important"},
         "nav-link": {"font-size": "18px", "color": "#005f91", "padding": "10px 18px"},
-        "nav-link:hover": {"background-color": "#171d42"},
-        "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
+        "nav-link:hover": {"background-color": "#7fb600"},
+        "nav-link-selected": {"background-color": "#0A4CA3", "color": "white"},
     }
 )
 
