@@ -213,7 +213,7 @@ tipo = option_menu(
     key="menu_tipo_energia",
     styles={
         "container": {"background-color": "#c4c4c4", "padding": "0!important"},
-        "nav-link": {"font-size": "18px", "color": "#005f91", "padding": "10px 18px"},
+        "nav-link": {"font-size": "18px", "color": "#171d42", "padding": "10px 18px"},
         "nav-link:hover": {"background-color": "#0077b6"},
         "nav-link-selected": {"background-color": "#00BFFF", "color": "white"},
     }
