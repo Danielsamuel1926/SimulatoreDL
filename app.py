@@ -123,7 +123,7 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
 
 /* Header */
 .header-container {
-    background: linear-gradient(90deg, #0b0c12, #253073);
+    background: linear-gradient(90deg, #171d42, #253073);
     padding: 20px;
     text-align: center;
     border-radius: 12px;
