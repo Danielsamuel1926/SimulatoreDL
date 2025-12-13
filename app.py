@@ -615,7 +615,7 @@ if calcola:
         
         # Il bonus sociale va sempre sottratto
         if bonus > 0:
-            righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": " ", "Importo (€)": f"{-abs(bonus):.2f} €"})
+            righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "_", "Importo (€)": f"{-abs(bonus):.2f} €"})
             totale -= abs(bonus)
         
         # --- STAMPA FINALE ---
