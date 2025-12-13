@@ -139,7 +139,7 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     margin-bottom: 20px;
 }
 
-/* Pulsanti */
+/* Pulsanti Standard (Calcola e Reset) */
 div.stButton > button {
     width: 100%;
     border-radius: 8px;
@@ -167,10 +167,10 @@ div.stButton > button {
     margin-top: 5px;
 }
 
-/* Stile per il pulsante download PDF custom */
-.stDownloadButton a {
-    background-color: #1d6600; 
-    color: white; 
+/* NUOVO STILE: Pulsante Download PDF */
+.box-download-custom a {
+    background: linear-gradient(90deg, #186020 0%, #38a169 100%); /* Verde scuro a Verde chiaro */
+    color: white !important; /* Forza il testo bianco */
     padding: 10px 20px; 
     text-align: center; 
     text-decoration: none; 
@@ -179,7 +179,14 @@ div.stButton > button {
     font-weight: bold; 
     width:100%; 
     box-sizing:border-box;
-    margin-top: 10px; /* Spazio dal totale */
+    margin-top: 20px; /* Spazio aggiuntivo dal totale */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.box-download-custom a:hover {
+    background: linear-gradient(90deg, #38a169 0%, #186020 100%);
+    cursor: pointer;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -389,7 +396,7 @@ st.session_state.fatt_attuale = fatt_attuale
 # PULSANTI CALCOLA E RESET
 # ==============================
 st.markdown("---")
-col1, col2 = st.columns(2) # Rimosso col3
+col1, col2 = st.columns(2) 
 
 calcola = col1.button("▶️ Calcola Simulazione")
 reset = col2.button("🗑️ Reset Dati")
@@ -665,11 +672,9 @@ if calcola:
                 st.info("Totale simulato uguale alla fattura attuale.")
 
         # ==================================================
-        # LOGICA DI DOWNLOAD PDF (SPOSTATA QUI)
+        # LOGICA DI DOWNLOAD PDF (SPOSTATA E STILIZZATA)
         # ==================================================
         
-        # Genera i byte del PDF chiamando la funzione
-        # La funzione genera_pdf_simulazione gestisce internamente la conversione € -> Eur
         pdf_output = genera_pdf_simulazione(
             cliente,
             periodo_str,
@@ -685,11 +690,10 @@ if calcola:
         b64_pdf = base64.b64encode(pdf_output).decode('latin-1')
         filename = f"Report_Simulazione_{tipo}_{cliente.replace(' ', '_')}.pdf"
         
-        # Crea il link di download
-        # Utilizzo st.markdown per il pulsante customizzato con lo stile .stDownloadButton a
-        href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{filename}" class="stDownloadButton">⬇️ Scarica Scontrino PDF</a>'
+        # Crea il link di download con la nuova classe CSS
+        href = f'<div class="box-download-custom"><a href="data:application/pdf;base64,{b64_pdf}" download="{filename}">⬇️ SCARICA SCONTRINO PDF (Report)</a></div>'
         
-        # Mostra il pulsante di download in una colonna per mantenere l'allineamento con il Totale
+        # Mostra il pulsante di download
         st.markdown(href, unsafe_allow_html=True)
         
     except Exception as e:
