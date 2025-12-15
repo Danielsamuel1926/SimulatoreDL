@@ -243,7 +243,7 @@ ACCISA_LUCE_TIPI = {
         "soglia_annua": 0,
         "descrizione": f"Aliquota piena (0.0227 €/kWh) su tutto il consumo."
     },
-    "Uso Diverso/Azienda (Bassa Tensione)": {
+    "Uso Diverso/Azienda (Bassa Tensione)": { # Questo rientra negli 'altri usi' che richiedono IVA 22%
         "aliquota": 0.0125, 
         "soglia_annua": 0,
         "descrizione": f"Aliquota ridotta uso diverso: 0.0125 €/kWh."
@@ -274,7 +274,7 @@ QUOTA_VAR_DIST_GAS = 0.171530
 ONERI_SISTEMA_GAS = 1.50 # €/mese
 
 MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
-        "LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
+        LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
 # Funzioni di calcolo per il Gas
 def accisa_annua_gas(smc_annuo):
@@ -284,17 +284,20 @@ def accisa_annua_gas(smc_annuo):
     else: return 0.186
 
 def aliquota_iva_gas(smc_annuo):
+    # Standard: 10% fino a 480 smc, 22% oltre.
     return 0.10 if smc_annuo <= 480 else 0.22
 
 # ==============================
 # INIZIALIZZAZIONE SESSION STATE
 # ==============================
-for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale", "tipo_accisa_luce"]:
+for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale", "tipo_accisa_luce", "tipo_cliente"]:
     if key not in st.session_state:
         if key == "kw":
             st.session_state[key] = 3.0
         elif key == "cliente":
             st.session_state[key] = ""
+        elif key == "tipo_cliente":
+            st.session_state[key] = "Residenziale" # Nuovo default
         elif key == "tipo_accisa_luce":
             st.session_state[key] = DEFAULT_ACCISA_LUCE_KEY
         elif key in ["kwh_annui", "smc_annuo"]:
@@ -311,6 +314,15 @@ for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcol
 # INPUT UTENTI
 # ==============================
 st.markdown("### 📝 Dati del Cliente e Consumi:")
+
+# === NUOVA SELEZIONE: TIPO CLIENTE (Residenziale o Business) ===
+tipo_cliente = st.selectbox(
+    "Tipologia Cliente", 
+    ["Residenziale", "Business"], 
+    key='input_tipo_cliente_final',
+    index=["Residenziale", "Business"].index(st.session_state.tipo_cliente)
+)
+st.session_state.tipo_cliente = tipo_cliente
 
 # === CAMPO CLIENTE IN PRIMIS ===
 cliente = st.text_input("Nome Cliente", st.session_state.cliente, key='input_cliente_final').upper()
@@ -413,6 +425,7 @@ if reset:
             st.session_state[key] = 0.0
     st.session_state.kw = 3.0
     st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
+    st.session_state.tipo_cliente = "Residenziale" # Reset del nuovo campo
     st.rerun()
 
 # ==============================
@@ -556,8 +569,17 @@ if calcola:
             
             # Base Imponibile IVA 10%
             totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
+            
+            # --- NUOVA LOGICA IVA LUCE ---
+            # Default IVA (Residenziale): 10%
+            iva_luce_rate = 0.10 
+            
+            # Override a 22% se esplicitamente 'Business' O 'Uso Diverso/Azienda' è selezionato
+            if tipo_cliente == "Business" or st.session_state.tipo_accisa_luce == "Uso Diverso/Azienda (Bassa Tensione)":
+                iva_luce_rate = 0.22
+
             # L'IVA si applica su (Base Imponibile + Accisa)
-            iva = (totale_imponibile + accisa_luce) * 0.10
+            iva = (totale_imponibile + accisa_luce) * iva_luce_rate
             
             # Totale Accise e IVA per la riga riepilogativa
             accise_iva_tot = accisa_luce + iva
@@ -590,7 +612,13 @@ if calcola:
             accisa_gas = accisa_unitario * consumo
             
             # IVA
-            aliquota_iva = aliquota_iva_gas(smc_annuo)
+            aliquota_iva = aliquota_iva_gas(smc_annuo) # Dynamic: 10% or 22%
+            
+            # --- NUOVA LOGICA IVA GAS ---
+            # Override a 22% se esplicitamente 'Business'
+            if tipo_cliente == "Business":
+                aliquota_iva = 0.22
+                
             totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
             # L'IVA si applica su (Base Imponibile + Accisa)
             iva = (totale_imponibile_iva + accisa_gas) * aliquota_iva
@@ -613,13 +641,12 @@ if calcola:
 
         if tipo == "Luce":
             # Luce: Accisa e IVA unite
-            righe.append({"Descrizione":"Accise + IVA (10%)", 
+            righe.append({"Descrizione":f"Accise + IVA ({iva_luce_rate*100:.0f}%)", 
                           "Costo Unitario (€)": "N/A", 
                           "Importo (€)": f"{accise_iva_tot:.2f} €"})
         else:
             # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
-            aliquota_iva_gas_attuale = aliquota_iva_gas(smc_annuo) # Recupera l'aliquota Gas corretta
-            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva_gas_attuale*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva_gas_attuale, "%"), "Importo (€)": f"{accise_iva_tot:.2f} €"})
+            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f} €"})
 
 
         # ---------------- VOCI EXTRA ----------------
