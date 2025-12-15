@@ -65,7 +65,6 @@ def genera_pdf_simulazione(cliente, periodo_str, tipo_energia, offerta, df_risul
     # Righe Dati
     pdf.set_font('Arial', '', 9)
     for index, row in df_risultati.iterrows():
-        # Sostituisci il simbolo Euro con la stringa "Eur" nella descrizione
         descrizione_pulita = str(row['Descrizione']).replace('€', 'Eur')
         costo_unitario_pulito = str(row['Costo Unitario (€)']).replace('€', 'Eur')
         importo_pulito = str(row['Importo (€)']).replace('€', 'Eur')
@@ -77,7 +76,7 @@ def genera_pdf_simulazione(cliente, periodo_str, tipo_energia, offerta, df_risul
 
     # 3. Totale e Risparmio
     pdf.set_font('Arial', 'B', 14)
-    pdf.set_fill_color(102, 179, 255) # Azzurro
+    pdf.set_fill_color(102, 179, 255) 
     pdf.cell(130, 10, 'TOTALE STIMATO SIMULAZIONE:', 1, 0, 'L', fill=True)
     pdf.cell(30, 10, f'{totale_finale:.2f} Eur', 1, 1, 'R', fill=True)
     pdf.ln(5)
@@ -85,27 +84,22 @@ def genera_pdf_simulazione(cliente, periodo_str, tipo_energia, offerta, df_risul
     if fatt_attuale > 0:
         pdf.set_font('Arial', '', 12)
         pdf.cell(0, 7, f'Importo Fattura Attuale per Confronto: {fatt_attuale:.2f} Eur', 0, 1)
-        
         pdf.set_font('Arial', 'B', 14)
         if diff > 0:
-            pdf.set_fill_color(144, 238, 144) # Verde chiaro
+            pdf.set_fill_color(144, 238, 144) 
             risp_text = f'RISPARMIO STIMATO: {diff:.2f} Eur'
         elif diff < 0:
-            pdf.set_fill_color(255, 160, 122) # Salmone
+            pdf.set_fill_color(255, 160, 122) 
             risp_text = f'AUMENTO STIMATO: {-diff:.2f} Eur'
         else:
-            pdf.set_fill_color(255, 255, 180) # Giallo chiaro
+            pdf.set_fill_color(255, 255, 180) 
             risp_text = 'NESSUN CAMBIAMENTO SIGNIFICATIVO'
         
         pdf.cell(0, 10, risp_text, 1, 1, 'C', fill=True)
 
-    # CORREZIONE ERRORE U+00A0 e €: 
-    # Usiamo 'iso-8859-1' che è simile a latin-1 ma compatibile con fpdf2 
-    # e rimuoviamo eventuali simboli euro residui
     try:
         pdf_bytes = pdf.output(dest='S').encode('iso-8859-1', 'ignore')
-    except UnicodeEncodeError:
-        # Soluzione fallback se fallisce ancora: decodifica, pulisci e codifica
+    except Exception:
         pdf_string = pdf.output(dest='S').decode('iso-8859-1', 'ignore')
         pdf_string_safe = pdf_string.replace('€', ' Eur').replace('\u20ac', ' Eur')
         pdf_bytes = pdf_string_safe.encode('iso-8859-1', 'ignore')
@@ -115,13 +109,10 @@ def genera_pdf_simulazione(cliente, periodo_str, tipo_energia, offerta, df_risul
 # ==============================
 # STILE GENERALE
 # ==============================
-st.set_page_config(layout="wide") # Imposta il layout wide per maggiore spazio
+st.set_page_config(layout="wide") 
 st.markdown("""
 <style>
-/* Caratteri e Sfondo */
 body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-/* Header */
 .header-container {
     background: linear-gradient(90deg, #171d42, #253073);
     padding: 20px;
@@ -130,24 +121,18 @@ body { background-color: #E7F5FF; font-family: 'Segoe UI', Tahoma, Geneva, Verda
     margin-bottom: 20px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
-
-/* Tabella (DataFrame) */
 .stDataFrame {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 20px;
 }
-
-/* Pulsanti Standard (Calcola e Reset) */
 div.stButton > button {
     width: 100%;
     border-radius: 8px;
     font-weight: bold;
     height: 40px;
 }
-
-/* Stile per il box dell'offerta */
 .box-offerta-custom {
     background: linear-gradient(90deg, #186020, #968a11);
     color:white;
@@ -155,22 +140,9 @@ div.stButton > button {
     border-radius:12px;
     margin-bottom:15px;
 }
-.box-offerta-custom h6, .box-offerta-custom p {
-    margin: 3px 0; /* Riduco i margini interni */
-}
-.box-offerta-custom p {
-    font-size: 14px;
-}
-.box-offerta-custom p:last-child {
-    font-weight: bold;
-    font-size: 15px;
-    margin-top: 5px;
-}
-
-/* NUOVO STILE: Pulsante Download PDF */
 .box-download-custom a {
-    background: linear-gradient(90deg, #186020 0%, #38a169 100%); /* Verde scuro a Verde chiaro */
-    color: white !important; /* Forza il testo bianco */
+    background: linear-gradient(90deg, #186020 0%, #38a169 100%);
+    color: white !important;
     padding: 10px 20px; 
     text-align: center; 
     text-decoration: none; 
@@ -179,14 +151,8 @@ div.stButton > button {
     font-weight: bold; 
     width:100%; 
     box-sizing:border-box;
-    margin-top: 20px; /* Spazio aggiuntivo dal totale */
+    margin-top: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-}
-
-.box-download-custom a:hover {
-    background: linear-gradient(90deg, #38a169 0%, #186020 100%);
-    cursor: pointer;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -201,9 +167,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==============================
-# MENU ORIZZONTALE
-# ==============================
 tipo = option_menu(
     menu_title=None,
     options=["Luce", "Gas"],
@@ -214,7 +177,6 @@ tipo = option_menu(
     styles={
         "container": {"background-color": "#c4c4c4", "padding": "0!important"},
         "nav-link": {"font-size": "18px", "color": "#005f91", "padding": "10px 18px"},
-        "nav-link:hover": {"background-color": "#7fb600"},
         "nav-link-selected": {"background-color": "#0A4CA3", "color": "white"},
     }
 )
@@ -224,507 +186,153 @@ tipo = option_menu(
 # ==============================
 QUOTA_POTENZA = 2.10
 DISPACCIAMENTO = 0.020
-ONERI_SISTEMA = 1.90 # €/mese
+ONERI_SISTEMA = 1.90
 ASOS = 0.03
 SPESA_RETE_VAR_LUCE_UNITARIO = 0.0445
 
-# ACCISA LUCE
-ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE = 0.0227 # €/kWh
-ACCISA_LUCE_SOGLIA_ANNUA_RESIDENTE = 150 * 12 # 1800 kWh/anno (150 kWh/mese)
-
 ACCISA_LUCE_TIPI = {
-    "Domestico Residente (Accisa differenziata)": {
-        "aliquota": ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE,
-        "soglia_annua": ACCISA_LUCE_SOGLIA_ANNUA_RESIDENTE,
-        "descrizione": f"Oltre {ACCISA_LUCE_SOGLIA_ANNUA_RESIDENTE} kWh/anno (150/mese), aliquota {ACCISA_LUCE_ALIQUOTA_DOMESTICO_RESIDENTE} €/kWh."
-    },
-    "Domestico Non Residente (Accisa piena)": {
-        "aliquota": 0.0227, 
-        "soglia_annua": 0,
-        "descrizione": f"Aliquota piena (0.0227 €/kWh) su tutto il consumo."
-    },
-    "Uso Diverso/Azienda (Bassa Tensione)": { # Questo rientra negli 'altri usi' che richiedono IVA 22%
-        "aliquota": 0.0125, 
-        "soglia_annua": 0,
-        "descrizione": f"Aliquota ridotta uso diverso: 0.0125 €/kWh."
-    },
-    "Esenzione Totale": {
-        "aliquota": 0.0,
-        "soglia_annua": 999999, 
-        "descrizione": "Esenzione totale da Accisa."
-    }
+    "Domestico Residente (Accisa differenziata)": {"aliquota": 0.0227, "soglia_annua": 1800, "descrizione": "Oltre 1800 kWh/anno, aliquota 0.0227 €/kWh."},
+    "Domestico Non Residente (Accisa piena)": {"aliquota": 0.0227, "soglia_annua": 0, "descrizione": "Aliquota piena su tutto il consumo."},
+    "Uso Diverso/Azienda (Bassa Tensione)": {"aliquota": 0.0125, "soglia_annua": 0, "descrizione": "Aliquota 0.0125 €/kWh. IVA 22% obbligatoria."},
+    "Esenzione Totale": {"aliquota": 0.0, "soglia_annua": 999999, "descrizione": "Esenzione totale."}
 }
-DEFAULT_ACCISA_LUCE_KEY = "Domestico Residente (Accisa differenziata)"
 
-# PUN (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
-PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 
-        0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
-
-# OFFERTE_LUCE: (SPREAD, COSTO_COMM_ANNUO)
+PUN = [0, 0.14303, 0.15036, 0.12055, 0.09985, 0.09358, 0.11178, 0.11313, 0.10879, 0.10908, 0.11104, 0.11709, 0.10800]
 OFFERTE_LUCE = {"Fast":(0.010,120.0),"F&F":(0.008,102.0),"Sind":(0.005,84.0),"Smart":(0.010,150.0)}
-
-# PSV (1-indexed: 0=dummy, 1=Gennaio, ..., 12=Dicembre)
 PSV = [0,0.388,0.402,0.403,0.418,0.422,0.415,0.410,0.400,0.388,0.345,0.350,0.360]
-# OFFERTE_GAS: (SPREAD, COSTO_COMM_ANNUO)
 OFFERTE_GAS = {"Fast":(0.10,120.0),"F&F":(0.08,102.0),"Sind":(0.05,84.0),"Smart":(0.10,150.0)}
 
 QUOTA_CONSUMO_GAS = 0.025
 QUOTA_DIST_GAS = 31 * 0.140658
 QUOTA_VAR_DIST_GAS = 0.171530
-ONERI_SISTEMA_GAS = 1.50 # €/mese
-
-MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO",
-        LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
-
-# Funzioni di calcolo per il Gas
-def accisa_annua_gas(smc_annuo):
-    if smc_annuo <= 120: return 0.044
-    elif smc_annuo <= 480: return 0.175
-    elif smc_annuo <= 1560: return 0.170
-    else: return 0.186
-
-def aliquota_iva_gas(smc_annuo):
-    # Standard: 10% fino a 480 smc, 22% oltre.
-    return 0.10 if smc_annuo <= 480 else 0.22
+ONERI_SISTEMA_GAS = 1.50
+MESI = ["GENNAIO","FEBBRAIO","MARZO","APRILE","MAGGIO","GIUGNO","LUGLIO","AGOSTO","SETTEMBRE","OTTOBRE","NOVEMBRE","DICEMBRE"]
 
 # ==============================
-# INIZIALIZZAZIONE SESSION STATE
+# SESSION STATE
 # ==============================
 for key in ["cliente","kwh","kwh_annui","kw","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale", "tipo_accisa_luce", "tipo_cliente"]:
     if key not in st.session_state:
-        if key == "kw":
-            st.session_state[key] = 3.0
-        elif key == "cliente":
-            st.session_state[key] = ""
-        elif key == "tipo_cliente":
-            st.session_state[key] = "Residenziale" # Nuovo default
-        elif key == "tipo_accisa_luce":
-            st.session_state[key] = DEFAULT_ACCISA_LUCE_KEY
-        elif key in ["kwh_annui", "smc_annuo"]:
-            st.session_state[key] = 2000.0 if key == "kwh_annui" else 700.0
-        else:
-            st.session_state[key] = 0.0
-    
-    # CONTROLLO DI ROBUSTEZZA PER LA CHIAVE ACCISA
-    if key == "tipo_accisa_luce" and st.session_state.tipo_accisa_luce not in ACCISA_LUCE_TIPI.keys():
-        st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
-
+        st.session_state[key] = "Residenziale" if key == "tipo_cliente" else ("Domestico Residente (Accisa differenziata)" if key == "tipo_accisa_luce" else 0.0)
+        if key == "cliente": st.session_state[key] = ""
+        if key == "kw": st.session_state[key] = 3.0
 
 # ==============================
 # INPUT UTENTI
 # ==============================
-st.markdown("### 📝 Dati del Cliente e Consumi:")
+st.markdown("### 📝 Dati del Cliente:")
+col_main1, col_main2 = st.columns(2)
+with col_main1:
+    tipo_cliente = st.selectbox("Tipologia Cliente", ["Residenziale", "Business"], key='input_tipo_cliente')
+with col_main2:
+    cliente = st.text_input("Nome Cliente", st.session_state.cliente).upper()
 
-# === NUOVA SELEZIONE: TIPO CLIENTE (Residenziale o Business) ===
-tipo_cliente = st.selectbox(
-    "Tipologia Cliente", 
-    ["Residenziale", "Business"], 
-    key='input_tipo_cliente_final',
-    index=["Residenziale", "Business"].index(st.session_state.tipo_cliente)
-)
-st.session_state.tipo_cliente = tipo_cliente
-
-# === CAMPO CLIENTE IN PRIMIS ===
-cliente = st.text_input("Nome Cliente", st.session_state.cliente, key='input_cliente_final').upper()
-st.session_state.cliente = cliente
-# ===============================
-
-# Contenitore per i dati del periodo
 col_periodo, col_mese1, col_mese2 = st.columns(3)
+with col_periodo: periodo = st.selectbox("Periodo di Fatturazione", ["Mensile","Bimestrale"])
+with col_mese1: mese1 = st.selectbox("Mese 1", MESI)
+with col_mese2: mese2 = st.selectbox("Mese 2", MESI) if periodo == "Bimestrale" else None
 
-with col_periodo:
-    periodo = st.selectbox("Periodo di Fatturazione", ["Mensile","Bimestrale"], key='input_periodo')
-with col_mese1:
-    mese1 = st.selectbox("Mese 1", MESI, key='input_mese1')
-with col_mese2:
-    if periodo == "Bimestrale":
-        mese2 = st.selectbox("Mese 2", MESI, key='input_mese2')
-    else:
-        mese2 = None
-
-# Input Dati Luce/Gas specifici
 st.markdown("---")
-
-col_cons_1, col_cons_2 = st.columns(2)
-
 if tipo == "Luce":
-    with col_cons_1:
-        kwh = st.number_input("Consumo Luce kWh (del periodo)", value=st.session_state.kwh, min_value=0.0, key='input_kwh')
-        st.session_state.kwh = kwh
-    with col_cons_2:
-        kwh_annui = st.number_input("Consumo annuo Luce (kWh)", value=st.session_state.kwh_annui, min_value=0.0, key='input_kwh_annui')
-        st.session_state.kwh_annui = kwh_annui
+    c1, c2, c3 = st.columns(3)
+    with c1: kwh = st.number_input("kWh Periodo", value=250.0)
+    with c2: kwh_annui = st.number_input("kWh Annui", value=2500.0)
+    with c3: kw = st.selectbox("Potenza kW", [1.5, 3.0, 4.5, 6.0, 10.0], index=1)
     
-    col_accisa_1, col_accisa_2 = st.columns(2)
-    with col_accisa_1:
-        kw_options = [1.0, 1.5, 2.0, 2.5, 3.0, 4.5, 5.0, 5.5, 6.0]
-        default_index = kw_options.index(st.session_state.kw) if st.session_state.kw in kw_options else 4
-        kw = st.selectbox("Potenza impegnata (kW)", kw_options, index=default_index, key='input_kw')
-        st.session_state.kw = kw
-    
-    with col_accisa_2:
-        tipo_accisa_luce = st.selectbox(
-            "Tipologia Accisa (Luce)", 
-            list(ACCISA_LUCE_TIPI.keys()),
-            index=list(ACCISA_LUCE_TIPI.keys()).index(st.session_state.tipo_accisa_luce),
-            key='input_tipo_accisa_luce'
-        )
-        st.session_state.tipo_accisa_luce = tipo_accisa_luce
-    
-    offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()), key='input_offerta_luce')
-    st.info(f"**Dettaglio Accisa:** {ACCISA_LUCE_TIPI[tipo_accisa_luce]['descrizione']}")
-    
-    canone_tv = st.number_input("Canone TV (€)", value=0.0, min_value=0.0, key='input_canone_tv')
+    tipo_accisa_luce = st.selectbox("Tipologia Accisa", list(ACCISA_LUCE_TIPI.keys()))
+    offerta = st.selectbox("Offerta Luce", list(OFFERTE_LUCE.keys()))
+    canone_tv = st.number_input("Canone TV (€)", value=0.0)
 else:
-    with col_cons_1:
-        smc = st.number_input("Consumo Gas (m³)", value=st.session_state.smc, min_value=0.0, key='input_smc')
-        st.session_state.smc = smc
-    with col_cons_2:
-        smc_annuo = st.number_input("Consumo annuo Gas (m³)", value=st.session_state.smc_annuo, min_value=0.0, key='input_smc_annuo')
-        st.session_state.smc_annuo = smc_annuo
-    offerta = st.selectbox("Offerta Gas", list(OFFERTE_GAS.keys()), key='input_offerta_gas')
+    c1, c2 = st.columns(2)
+    with c1: smc = st.number_input("SMC Periodo", value=100.0)
+    with c2: smc_annuo = st.number_input("SMC Annui", value=1000.0)
+    offerta = st.selectbox("Offerta Gas", list(OFFERTE_GAS.keys()))
     canone_tv = 0.0
 
-# Input Dati Comuni/Aggiuntivi
-st.markdown("---")
-st.markdown("### ➕ Voci Aggiuntive Altri Importi:")
-
-col_extra_1, col_extra_2 = st.columns(2)
-with col_extra_1:
-    bonus = st.number_input("Bonus Sociale (da sottrarre, €)", value=st.session_state.bonus, key='input_bonus')
-    ricalcoli = st.number_input("Ricalcoli (€)", value=st.session_state.ricalcoli, key='input_ricalcoli')
-with col_extra_2:
-    altre = st.number_input("Altre Partite (€)", value=st.session_state.altre, key='input_altre')
-    fatt_attuale = st.number_input("Importo Fattura Attuale per Confronto (€)", value=st.session_state.fatt_attuale, key='input_fatt_attuale')
-
-# Memorizzazione dello stato della sessione (assicura la persistenza dei dati)
-st.session_state.bonus = bonus
-st.session_state.ricalcoli = ricalcoli
-st.session_state.altre = altre
-st.session_state.fatt_attuale = fatt_attuale
-
+st.markdown("### ➕ Voci Aggiuntive:")
+ca1, ca2, ca3, ca4 = st.columns(4)
+with ca1: bonus = st.number_input("Bonus (€)", value=0.0)
+with ca2: ricalcoli = st.number_input("Ricalcoli (€)", value=0.0)
+with ca3: altre = st.number_input("Altre (€)", value=0.0)
+with ca4: fatt_attuale = st.number_input("Fattura Confronto (€)", value=0.0)
 
 # ==============================
-# PULSANTI CALCOLA E RESET
+# CALCOLO
 # ==============================
-st.markdown("---")
-col1, col2 = st.columns(2) 
-
-calcola = col1.button("▶️ Calcola Simulazione")
-reset = col2.button("🗑️ Reset Dati")
-
-
-if reset:
-    # Resetta tutti i valori e ricarica l'app
-    for key in ["cliente","kwh","kwh_annui","smc","smc_annuo","bonus","ricalcoli","altre","fatt_attuale"]:
-        if key == "cliente":
-            st.session_state[key] = ""
-        elif key in ["kwh_annui", "smc_annuo"]:
-            st.session_state[key] = 2000.0 if key == "kwh_annui" else 700.0
-        else:
-            st.session_state[key] = 0.0
-    st.session_state.kw = 3.0
-    st.session_state.tipo_accisa_luce = DEFAULT_ACCISA_LUCE_KEY
-    st.session_state.tipo_cliente = "Residenziale" # Reset del nuovo campo
-    st.rerun()
-
-# ==============================
-# CALCOLO BOLLETTA E DOWNLOAD PDF
-# ==============================
-if calcola:
-    st.markdown("#### 🧾 Box dell'offerta")
-    
+if st.button("▶️ Calcola"):
     try:
-        if not st.session_state.cliente:
-            st.warning("⚠️ Per favore, inserisci il Nome Cliente per procedere con la simulazione.")
-            st.stop()
-        
-        # Calcolo degli indici del mese (1-indexed per PUN/PSV)
         mesi_idx = [MESI.index(mese1) + 1]
         periodo_str = mese1
-        if periodo=="Bimestrale":
-            if mese2 is None:
-                st.error("Selezionare il secondo mese per il periodo bimestrale.")
-                raise ValueError("Secondo mese non selezionato.")
+        if periodo=="Bimestrale" and mese2:
             mesi_idx.append(MESI.index(mese2) + 1)
-            periodo_str = f"{mese1} e {mese2}"
+            periodo_str = f"{mese1}-{mese2}"
         
         num_mesi = len(mesi_idx)
-        righe = [] # Unico scontrino
-        
-        # --- Dati offerta ---
+        p_medio = sum([PUN[m] if tipo=="Luce" else PSV[m] for m in mesi_idx])/num_mesi
+        righe = []
+
         if tipo == "Luce":
-            SPREAD, COMM_ANNUO = OFFERTE_LUCE[offerta] # COMM_ANNUO è in €/anno
-            unita_prezzo = "kWh"
-            lista_prezzi = PUN
-            consumo = kwh
-            consumo_annuo_ref = kwh_annui # Uso kWh annui per riferimento accisa
-            unita_misura = "kWh"
-            costo_indicizzato_base = "PUN"
-            costo_annuo_commercializzazione = COMM_ANNUO
-        else:
-            SPREAD, COMM_ANNUO = OFFERTE_GAS[offerta] # COMM_ANNUO è in €/anno
-            unita_prezzo = "m³"
-            lista_prezzi = PSV
-            consumo = smc
-            consumo_annuo_ref = smc_annuo # Uso smc annui per riferimento accisa gas
-            unita_misura = "m³"
-            costo_indicizzato_base = "PSV"
-            costo_annuo_commercializzazione = COMM_ANNUO
-
-
-        # Costo Commercializzazione Mensile
-        COMM_MENSILE = COMM_ANNUO / 12
-        COMM_TOT = COMM_MENSILE * num_mesi
-
-        # --- Calcolo costi variabili ---
-        prezzo_medio_indicizzato = sum([lista_prezzi[m] for m in mesi_idx])/num_mesi
-        
-        if tipo=="Luce":
-            # Calcolo corretto che include tutti i costi variabili (Dispacciamento e ASOS inclusi)
-            prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + DISPACCIAMENTO + ASOS
-            materia = consumo * prezzo_unitario_materia
-            
-            # Descrizione Semplificata per Luce 
-            materia_descrizione = f"Materia Energia (variabile) ({consumo:.2f} {unita_misura})"
-        else:
-            # Costo materia prima: PSV + Spread + Quota Consumo Gas (Variabile)
-            prezzo_unitario_materia = prezzo_medio_indicizzato + SPREAD + QUOTA_CONSUMO_GAS
-            materia = consumo * prezzo_unitario_materia
-            
-            # Descrizione Semplificata per Gas
-            materia_descrizione = f"Materia Energia/PSV (variabile) ({consumo:.2f} {unita_misura})"
-
-
-        # Funzione helper per formattare l'unità o N/A (Usa € nel codice Streamlit)
-        def fmt_unit(val, unit=""):
-            # Gestisce il caso di costo unitario per voce fissa (costo €/unità di tempo o €/kW)
-            if unit == "mese" or unit == "kW":
-                return f"{val:.2f} €/{unit}"
-            # Gestisce il caso di costo unitario per voce variabile (costo €/kWh o €/m³)
-            elif unit:
-                return f"{val:.4f} €/{unit}"
-            # Per l'IVA nel Gas, mostriamo la percentuale
-            elif unit == "%":
-                return f"{val*100:.0f} %" 
-            # NUOVA UNITÀ: Costo Annuale di Commercializzazione
-            elif unit == "anno": 
-                return f"{val:.2f} €/{unit}"
-            # Per voci fisse senza unità di tempo specifica (es. Ricalcoli)
-            return "N/A"
-
-        # --- BOX DETTAGLIO COSTI (AGGIORNATO) ---
-        
-        # 1. Costo Unitario Totale Materia
-        costo_totale_materia_text = (
-            f"Costo Totale Materia ({costo_indicizzato_base} + spread ): "
-            f"{prezzo_unitario_materia:.4f} €/{unita_misura}"
-        )
-
-        # 2. Dettaglio Spread
-        spread_text = f"Costo Spread: **{SPREAD:.4f} €/{unita_prezzo}**"
-
-        # 3. Dettaglio Commercializzazione
-        comm_annua_text = f"Costo Comm. Anno: **{costo_annuo_commercializzazione:.2f} €/anno** ({COMM_MENSILE:.2f} €/mese)"
-        
-        st.markdown(f"""
-        <div class="box-offerta-custom">
-            <h6 style="margin:0;">**{st.session_state.cliente}** - Offerta: **{offerta}**</h6>
-            <p style="margin:0; font-size:14px;">Periodo: {periodo_str}</p>
-            <p style="margin:5px 0 0 0;">{spread_text}</p>
-            <p style="margin:5px 0 0 0;">{comm_annua_text}</p>
-            <p style="margin:5px 0 0 0; font-weight:bold;">{costo_totale_materia_text}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        totale = 0.0
-        accise_iva_tot = 0.0
-
-        # ---------------- VOCI DI FORNITURA ----------------
-        if tipo=="Luce":
-            # Spesa per la Rete (Quota Variabile)
-            sp_rete_variabile = consumo * SPESA_RETE_VAR_LUCE_UNITARIO
-            # Quota Potenza (Fissa)
-            quota_pot = kw * QUOTA_POTENZA * num_mesi
-            # Oneri di Sistema (Fissi)
+            spr, comm = OFFERTE_LUCE[offerta]
+            p_unit = p_medio + spr + DISPACCIAMENTO + ASOS
+            materia = kwh * p_unit
+            comm_periodo = (comm/12) * num_mesi
+            rete = kwh * SPESA_RETE_VAR_LUCE_UNITARIO
+            pot = kw * QUOTA_POTENZA * num_mesi
             oneri = ONERI_SISTEMA * num_mesi
             
-            # --- CALCOLO ACCISA LUCE CON RIFERIMENTO ANNUO ---
-            accisa_config = ACCISA_LUCE_TIPI[st.session_state.tipo_accisa_luce]
-            accisa_aliquota = accisa_config["aliquota"]
-            accisa_soglia_annua = accisa_config["soglia_annua"]
-            
-            accisa_luce = 0.0
-            if accisa_aliquota > 0 and consumo_annuo_ref > 0:
-                # Quota di consumo annuo eccedente la soglia annuale
-                consumo_annuo_tassabile = max(0, consumo_annuo_ref - accisa_soglia_annua)
-                
-                # Calcolo della quota di consumo tassabile annua in percentuale
-                rapporto_tassabile = consumo_annuo_tassabile / consumo_annuo_ref
-                
-                # Consumo del periodo tassabile con l'aliquota piena
-                consumo_tassabile = consumo * rapporto_tassabile
-                
-                accisa_luce = consumo_tassabile * accisa_aliquota
-            
-            # Base Imponibile IVA 10%
-            totale_imponibile = materia + sp_rete_variabile + quota_pot + oneri + COMM_TOT
-            
-            # --- NUOVA LOGICA IVA LUCE ---
-            # Default IVA (Residenziale): 10%
-            iva_luce_rate = 0.10 
-            
-            # Override a 22% se esplicitamente 'Business' O 'Uso Diverso/Azienda' è selezionato
-            if tipo_cliente == "Business" or st.session_state.tipo_accisa_luce == "Uso Diverso/Azienda (Bassa Tensione)":
-                iva_luce_rate = 0.22
-
-            # L'IVA si applica su (Base Imponibile + Accisa)
-            iva = (totale_imponibile + accisa_luce) * iva_luce_rate
-            
-            # Totale Accise e IVA per la riga riepilogativa
-            accise_iva_tot = accisa_luce + iva
-            
-            # Voci Luce (Dispacciamento rimosso da qui)
-            righe += [
-                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "kWh"), "Importo (€)": f"{materia:.2f} €"},
-                # Commercializzazione mostra il costo annuo dell'offerta
-                {"Descrizione":"Commercializzazione", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f} €"},
-                {"Descrizione":f"Quota Potenza ({kw:.1f} kW) (Fissa)", "Costo Unitario (€)": fmt_unit(QUOTA_POTENZA, "kW"), "Importo (€)": f"{quota_pot:.2f} €"},
-                {"Descrizione":"Oneri di sistema (Fissi)", "Costo Unitario (€)": fmt_unit(ONERI_SISTEMA, "mese"), "Importo (€)": f"{oneri:.2f} €"},
-                {"Descrizione":"Spesa Rete e gli oneri generali di sistema ", "Costo Unitario (€)": fmt_unit(SPESA_RETE_VAR_LUCE_UNITARIO, "kWh"), "Importo (€)": f"{sp_rete_variabile:.2f} €"},
-            ]
-            
-            totale = totale_imponibile + accise_iva_tot
-
-        # ---------------- GAS (Gas Naturale) ----------------
-        else:
-            # Spesa per la Rete (Fissa + Variabile)
-            sp_rete_var_unitario = QUOTA_VAR_DIST_GAS 
-            sp_rete = sp_rete_var_unitario * consumo + QUOTA_DIST_GAS
-            
-            # Oneri di Sistema (Fissi + Variabili)
-            oneri_fissi = ONERI_SISTEMA_GAS * num_mesi
-            oneri_var_unitario = (0.07 + 0.12)
-            oneri_var = oneri_var_unitario * consumo
-            
-            # Accise (Variabili)
-            accisa_unitario = accisa_annua_gas(smc_annuo)
-            accisa_gas = accisa_unitario * consumo
+            # ACCISA
+            cfg = ACCISA_LUCE_TIPI[tipo_accisa_luce]
+            accisa = kwh * (cfg["aliquota"] * (max(0, kwh_annui - cfg["soglia_annua"])/kwh_annui)) if kwh_annui>0 else 0
             
             # IVA
-            aliquota_iva = aliquota_iva_gas(smc_annuo) # Dynamic: 10% or 22%
+            iva_rate = 0.22 if (tipo_cliente == "Business" or tipo_accisa_luce == "Uso Diverso/Azienda (Bassa Tensione)") else 0.10
+            iva = (materia + comm_periodo + rete + pot + oneri + accisa) * iva_rate
             
-            # --- NUOVA LOGICA IVA GAS ---
-            # Override a 22% se esplicitamente 'Business'
-            if tipo_cliente == "Business":
-                aliquota_iva = 0.22
-                
-            totale_imponibile_iva = materia + sp_rete + oneri_var + oneri_fissi + COMM_TOT
-            # L'IVA si applica su (Base Imponibile + Accisa)
-            iva = (totale_imponibile_iva + accisa_gas) * aliquota_iva
-            
-            # Totale Accise e IVA (per visualizzazione unificata nel Gas)
-            accise_iva_tot = accisa_gas + iva
-            
-            # Voci Gas
-            righe += [
-                {"Descrizione":materia_descrizione, "Costo Unitario (€)": fmt_unit(prezzo_unitario_materia, "m³"), "Importo (€)": f"{materia:.2f} €"},
-                # Commercializzazione mostra il costo annuo dell'offerta
-                {"Descrizione":"Commercializzazione", "Costo Unitario (€)": fmt_unit(costo_annuo_commercializzazione, "anno"), "Importo (€)": f"{COMM_TOT:.2f} €"},
-                {"Descrizione":f"Spesa Rete ({QUOTA_DIST_GAS:.2f} Fissa + Variabile)", "Costo Unitario (€)": fmt_unit(sp_rete_var_unitario, "m³"), "Importo (€)": f"{sp_rete:.2f} €"},
-                {"Descrizione":f"Oneri di sistema ({oneri_fissi:.2f} Fissi + Variabili)", "Costo Unitario (€)": fmt_unit(oneri_var_unitario, "m³"), "Importo (€)": f"{oneri_fissi + oneri_var:.2f} €"},
+            righe = [
+                {"Descrizione": "Spesa Materia", "Costo Unitario (€)": f"{p_unit:.4f}", "Importo (€)": f"{materia:.2f} €"},
+                {"Descrizione": "Commercializzazione", "Costo Unitario (€)": f"{comm:.2f}/anno", "Importo (€)": f"{comm_periodo:.2f} €"},
+                {"Descrizione": "Oneri e Rete", "Costo Unitario (€)": "Vario", "Importo (€)": f"{rete+pot+oneri:.2f} €"},
+                {"Descrizione": f"Accise + IVA ({iva_rate*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa+iva:.2f} €"}
             ]
+            totale = materia + comm_periodo + rete + pot + oneri + accisa + iva + canone_tv + ricalcoli + altre - bonus
+
+        else: # GAS
+            spr, comm = OFFERTE_GAS[offerta]
+            p_unit = p_medio + spr + QUOTA_CONSUMO_GAS
+            materia = smc * p_unit
+            comm_periodo = (comm/12) * num_mesi
+            rete = (QUOTA_VAR_DIST_GAS * smc) + QUOTA_DIST_GAS
+            oneri = (ONERI_SISTEMA_GAS * num_mesi) + (0.19 * smc)
             
-            totale = totale_imponibile_iva + accise_iva_tot
+            # ACCISA GAS
+            if smc_annuo <= 120: a_u = 0.044
+            elif smc_annuo <= 480: a_u = 0.175
+            else: a_u = 0.170
+            accisa = smc * a_u
+            
+            # IVA GAS
+            iva_rate = 0.22 if (tipo_cliente == "Business" or smc_annuo > 480) else 0.10
+            iva = (materia + comm_periodo + rete + oneri + accisa) * iva_rate
+            
+            righe = [
+                {"Descrizione": "Spesa Materia Gas", "Costo Unitario (€)": f"{p_unit:.4f}", "Importo (€)": f"{materia:.2f} €"},
+                {"Descrizione": "Commercializzazione", "Costo Unitario (€)": f"{comm:.2f}/anno", "Importo (€)": f"{comm_periodo:.2f} €"},
+                {"Descrizione": "Rete e Oneri", "Costo Unitario (€)": "Vario", "Importo (€)": f"{rete+oneri:.2f} €"},
+                {"Descrizione": f"Accise + IVA ({iva_rate*100:.0f}%)", "Costo Unitario (€)": "N/A", "Importo (€)": f"{accisa+iva:.2f} €"}
+            ]
+            totale = materia + comm_periodo + rete + oneri + accisa + iva + ricalcoli + altre - bonus
 
-        # ---------------- VOCI FISCALI (TASSE) ----------------
-
-        if tipo == "Luce":
-            # Luce: Accisa e IVA unite
-            righe.append({"Descrizione":f"Accise + IVA ({iva_luce_rate*100:.0f}%)", 
-                          "Costo Unitario (€)": "N/A", 
-                          "Importo (€)": f"{accise_iva_tot:.2f} €"})
-        else:
-            # Gas: Accisa + IVA sono già calcolate e visualizzate insieme per il gas
-            righe.append({"Descrizione":f"Accisa + IVA ({aliquota_iva*100:.0f}%)", "Costo Unitario (€)": fmt_unit(aliquota_iva, "%"), "Importo (€)": f"{accise_iva_tot:.2f} €"})
-
-
-        # ---------------- VOCI EXTRA ----------------
-        
-        # Voci Aggiuntive/Sottrattive
-        if canone_tv > 0:
-            # Il canone TV viene visualizzato come costo unitario di sé stesso
-            righe.append({"Descrizione": "Canone TV", "Costo Unitario (€)": f"{canone_tv:.2f} €", "Importo (€)": f"{canone_tv:.2f} €"})
-            totale += canone_tv
-
-        for voce, val in [("Ricalcoli", ricalcoli), ("Altre Partite", altre)]:
-            if val != 0:
-                righe.append({"Descrizione": voce, "Costo Unitario (€)": "N/A", "Importo (€)": f"{val:.2f} €"})
-                totale += val
-        
-        # Il bonus sociale va sempre sottratto
-        if bonus > 0:
-            righe.append({"Descrizione": "Bonus Sociale", "Costo Unitario (€)": "N/A", "Importo (€)": f"{-abs(bonus):.2f} €"})
-            totale -= abs(bonus)
-        
-        # --- STAMPA FINALE ---
-        
-        st.markdown("#### 🧾 SCONTRINO DELL'ENERGIA")
-
-        df = pd.DataFrame(righe)
-        # Rimuoviamo il simbolo Euro dal DataFrame qui, per visualizzare il numero puro 
-        # (altrimenti Streamlit lo formatta male nel dataframe).
-        df_display = df.copy()
-        for col in ['Costo Unitario (€)', 'Importo (€)']:
-            df_display[col] = df_display[col].str.replace('€', '').str.replace('Eur', '').str.strip()
-
-        st.dataframe(df_display, hide_index=True, use_container_width=True)
-        
-        totale_finale = max(0, totale) # Il totale non può essere negativo
-        
-        # Confronto con la fattura attuale
-        diff = fatt_attuale - totale_finale
-        
-        st.markdown(f"### 💰 Totale stimato: **{totale_finale:.2f} €**")
+        st.dataframe(pd.DataFrame(righe), use_container_width=True)
+        st.success(f"### Totale: {totale:.2f} €")
         
         if fatt_attuale > 0:
-            st.markdown("---")
-            st.markdown(f"**Importo Fattura Attuale inserita:** **{fatt_attuale:.2f} €**")
-            
-            if diff > 0:
-                st.success(f"🎉 Risparmio stimato: **{diff:.2f} €**")
-            elif diff < 0:
-                st.error(f"⚠️ Aumento stimato: **{-diff:.2f} €**")
-            else:
-                st.info("Totale simulato uguale alla fattura attuale.")
+            diff = fatt_attuale - totale
+            st.info(f"Risparmio rispetto attuale: {diff:.2f} €")
 
-        # ==================================================
-        # LOGICA DI DOWNLOAD PDF (SPOSTATA E STILIZZATA)
-        # ==================================================
-        
-        pdf_output = genera_pdf_simulazione(
-            cliente,
-            periodo_str,
-            tipo,
-            offerta,
-            df, # DataFrame dei risultati
-            totale_finale,
-            fatt_attuale,
-            diff
-        )
+        # PDF
+        pdf_out = genera_pdf_simulazione(cliente, periodo_str, tipo, offerta, pd.DataFrame(righe), totale, fatt_attuale, fatt_attuale-totale)
+        b64 = base64.b64encode(pdf_out).decode('latin-1')
+        st.markdown(f'<div class="box-download-custom"><a href="data:application/pdf;base64,{b64}" download="Report.pdf">⬇️ SCARICA PDF</a></div>', unsafe_allow_html=True)
 
-        # Codifica in Base64
-        b64_pdf = base64.b64encode(pdf_output).decode('latin-1')
-        filename = f"Report_Simulazione_{tipo}_{cliente.replace(' ', '_')}.pdf"
-        
-        # Crea il link di download con la nuova classe CSS
-        href = f'<div class="box-download-custom"><a href="data:application/pdf;base64,{b64_pdf}" download="{filename}">⬇️ SCARICA SCONTRINO PDF (Report)</a></div>'
-        
-        # Mostra il pulsante di download
-        st.markdown(href, unsafe_allow_html=True)
-        
     except Exception as e:
-        st.error(f"Errore nel calcolo o generazione PDF: {e}")
-
-st.markdown("---")
-st.info("La simulazione è indicativa e non ha valore contrattuale.")
+        st.error(f"Errore: {e}")
